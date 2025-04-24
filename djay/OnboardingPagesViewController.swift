@@ -55,12 +55,10 @@ final class OnboardingPagesViewController: UIViewController {
     }
 
     private func setupPages() {
-        let page1 = OnboardingWelcomePageViewController()
-        let page2 = OnboardingMixFavoriteMusicPageViewController()
-        let page3 = OnboardingSelectSkillPageViewController()
-        let page4 = OnboardingFinalePageViewController()
-
-        pages = [page1, page2, page3, page4]
+        pages = [OnboardingWelcomeViewController(),
+                 OnboardingMixFavoriteMusicViewController(),
+                 OnboardingSelectSkillViewController(),
+                 OnboardingFinaleViewController()]
 
         pageControl.numberOfPages = pages.count
         pageControl.currentPage = 0

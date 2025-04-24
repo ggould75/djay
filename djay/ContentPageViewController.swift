@@ -4,7 +4,7 @@ protocol PageContentProtocol {
     var continueButtonTitle: String { get }
 }
 
-final class OnboardingWelcomePageViewController: UIViewController, PageContentProtocol {
+final class OnboardingWelcomeViewController: UIViewController, PageContentProtocol {
     var continueButtonTitle: String = "Continue"
 
     override func viewDidLoad() {
@@ -12,7 +12,7 @@ final class OnboardingWelcomePageViewController: UIViewController, PageContentPr
     }
 }
 
-final class OnboardingMixFavoriteMusicPageViewController: UIViewController, PageContentProtocol {
+final class OnboardingMixFavoriteMusicViewController: UIViewController, PageContentProtocol {
     var continueButtonTitle: String = "Continue"
 
     override func viewDidLoad() {
@@ -20,7 +20,7 @@ final class OnboardingMixFavoriteMusicPageViewController: UIViewController, Page
     }
 }
 
-final class OnboardingSelectSkillPageViewController: UIViewController, PageContentProtocol {
+final class OnboardingSelectSkillViewController: UIViewController, PageContentProtocol {
     var continueButtonTitle: String = "Let's Go"
 
     override func viewDidLoad() {
@@ -28,7 +28,7 @@ final class OnboardingSelectSkillPageViewController: UIViewController, PageConte
     }
 }
 
-final class OnboardingFinalePageViewController: UIViewController, PageContentProtocol {
+final class OnboardingFinaleViewController: UIViewController, PageContentProtocol {
     var continueButtonTitle: String = "Done"
 
     override func viewDidLoad() {
