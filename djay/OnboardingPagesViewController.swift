@@ -25,8 +25,8 @@ final class OnboardingPagesViewController: UIViewController {
     private let pageControl: UIPageControl = {
         let control = UIPageControl()
         control.translatesAutoresizingMaskIntoConstraints = false
-        control.currentPageIndicatorTintColor = .systemBlue
-        control.pageIndicatorTintColor = .systemGray4
+        control.currentPageIndicatorTintColor = .white
+        control.pageIndicatorTintColor = .lightGray
         control.isUserInteractionEnabled = false
 
         return control
