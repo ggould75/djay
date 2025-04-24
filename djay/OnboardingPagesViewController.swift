@@ -4,7 +4,7 @@ final class OnboardingPagesViewController: UIViewController {
     private var pages = [UIViewController & PageContentProtocol]()
     private var currentPageIndex = 0
     private let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-    private var gradientBackgroundView = GradientBackgroundView()
+    private let gradientBackgroundView = GradientBackgroundView()
 
     private let continueButton: UIButton = {
         let button = UIButton(type: .system)
