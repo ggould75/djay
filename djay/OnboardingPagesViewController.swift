@@ -36,9 +36,9 @@ final class OnboardingPagesViewController: UIViewController {
         super.viewDidLoad()
 
         setupGradientBackground()
+        setupUI()
         setupPages()
         setupPageViewController()
-        setupUI()
     }
 
     private func setupGradientBackground() {
@@ -55,10 +55,12 @@ final class OnboardingPagesViewController: UIViewController {
     }
 
     private func setupPages() {
-        pages = [OnboardingWelcomeViewController(),
-                 OnboardingMixFavoriteMusicViewController(),
-                 OnboardingSelectSkillViewController(),
-                 OnboardingFinaleViewController()]
+        pages = [
+            OnboardingWelcomeViewController(),
+            OnboardingMixFavoriteMusicViewController(),
+            OnboardingSelectSkillViewController(),
+            OnboardingFinaleViewController()
+        ]
 
         pageControl.numberOfPages = pages.count
         pageControl.currentPage = 0
@@ -73,7 +75,7 @@ final class OnboardingPagesViewController: UIViewController {
             pageViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
             pageViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            pageViewController.view.bottomAnchor.constraint(equalTo: continueButton.topAnchor)
         ])
 
         pageViewController.didMove(toParent: self)
