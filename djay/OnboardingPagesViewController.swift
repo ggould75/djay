@@ -1,7 +1,7 @@
 import UIKit
 
 final class OnboardingPagesViewController: UIViewController {
-    private var pages = [UIViewController & PageContentProtocol]()
+    private var pages = [UIViewController & OnboardingPageContent]()
     private var currentPageIndex = 0
     private let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
     private let gradientBackgroundView = GradientBackgroundView()

@@ -1,10 +1,10 @@
 import UIKit
 
-protocol PageContentProtocol {
+protocol OnboardingPageContent {
     var continueButtonTitle: String { get }
 }
 
-final class OnboardingWelcomeViewController: UIViewController, PageContentProtocol {
+final class OnboardingWelcomeViewController: UIViewController, OnboardingPageContent {
     var continueButtonTitle: String = "Continue"
 
     override func viewDidLoad() {
@@ -12,7 +12,7 @@ final class OnboardingWelcomeViewController: UIViewController, PageContentProtoc
     }
 }
 
-final class OnboardingMixFavoriteMusicViewController: UIViewController, PageContentProtocol {
+final class OnboardingMixFavoriteMusicViewController: UIViewController, OnboardingPageContent {
     var continueButtonTitle: String = "Continue"
 
     override func viewDidLoad() {
@@ -20,7 +20,7 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, PageCont
     }
 }
 
-final class OnboardingSelectSkillViewController: UIViewController, PageContentProtocol {
+final class OnboardingSelectSkillViewController: UIViewController, OnboardingPageContent {
     var continueButtonTitle: String = "Let's Go"
 
     override func viewDidLoad() {
@@ -28,7 +28,7 @@ final class OnboardingSelectSkillViewController: UIViewController, PageContentPr
     }
 }
 
-final class OnboardingFinaleViewController: UIViewController, PageContentProtocol {
+final class OnboardingFinaleViewController: UIViewController, OnboardingPageContent {
     var continueButtonTitle: String = "Done"
 
     override func viewDidLoad() {
