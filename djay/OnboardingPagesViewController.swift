@@ -1,5 +1,9 @@
 import UIKit
 
+protocol OnboardingPageContent {
+    var continueButtonTitle: String { get }
+}
+
 final class OnboardingPagesViewController: UIViewController {
     private var pages = [UIViewController & OnboardingPageContent]()
     private var currentPageIndex = 0
