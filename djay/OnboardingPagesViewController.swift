@@ -46,7 +46,6 @@ final class OnboardingPagesViewController: UIViewController {
     }
 
     private func setupGradientBackground() {
-        gradientBackgroundView.frame = view.bounds
         gradientBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(gradientBackgroundView)
 
