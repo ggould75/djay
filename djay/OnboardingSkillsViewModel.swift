@@ -11,6 +11,8 @@ final class OnboardingSkillsViewModel {
         return SkillLevel.allCases.count
     }
 
+    var selectedIndexPath: IndexPath?
+
     func skillLevel(at indexPath: IndexPath) -> SkillLevel {
         return SkillLevel.allCases[indexPath.section]
     }

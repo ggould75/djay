@@ -1,15 +1,18 @@
 import UIKit
 
 final class OnboardingSkillCell: UITableViewCell {
+    private enum Constants {
+        static let fontMetrics = UIFontMetrics(forTextStyle: .body)
+        static let preferredFont = UIFont.systemFont(ofSize: 17)
+    }
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
-        let fontMetrics = UIFontMetrics(forTextStyle: .body)
-        let preferredFont = UIFont.systemFont(ofSize: 17)
-
         var contentConfiguration: UIListContentConfiguration = defaultContentConfiguration()
         contentConfiguration.textProperties.color = .white
-        contentConfiguration.textProperties.font = fontMetrics.scaledFont(for: preferredFont, maximumPointSize: 25)
+        contentConfiguration.textProperties.font = Constants.fontMetrics.scaledFont(for: Constants.preferredFont,
+                                                                                    maximumPointSize: 25)
         self.contentConfiguration = contentConfiguration
 
         var backgroundConfiguration = UIBackgroundConfiguration.listGroupedCell()
@@ -47,6 +50,29 @@ final class OnboardingSkillCell: UITableViewCell {
             self.contentConfiguration = newContentConfiguration
         }
     }
+
+    // MARK: - ??
+
+    fileprivate func updateUI(for traitCollection: UITraitCollection) {
+        print("cell.verticalSizeClass: \(traitCollection.verticalSizeClass.rawValue)")
+        var newContentConfiguration = contentConfiguration as! UIListContentConfiguration
+
+        if traitCollection.verticalSizeClass == .regular {
+            newContentConfiguration.textProperties.font = Constants.fontMetrics.scaledFont(for: Constants.preferredFont,
+                                                                                           maximumPointSize: 25)
+        } else if traitCollection.verticalSizeClass == .compact {
+            let maximumPointSize: CGFloat = UIScreen.main.nativeBounds.width <= 640
+                                                ? 17 // for iPhone SE
+                                                : 20 // for larger iPhones
+            let preferredFontSize: CGFloat = UIScreen.main.nativeBounds.width <= 640
+                                                ? 10 // for iPhone SE
+                                                : 15 // for larger iPhones
+            newContentConfiguration.textProperties.font = Constants.fontMetrics.scaledFont(for: UIFont.systemFont(ofSize: preferredFontSize),
+                                                                                           maximumPointSize: maximumPointSize)
+        }
+
+        self.contentConfiguration = newContentConfiguration
+    }
 }
 
 // MARK: - OnboardingSkillsViewController
@@ -81,7 +107,7 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
         imageView.setContentHuggingPriority(.required, for: .vertical)
-        imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        imageView.setContentCompressionResistancePriority(.defaultLow - 2, for: .vertical)
         imageView.image = UIImage(named: "onboarding-listening-emoji")
 
         return imageView
@@ -130,6 +156,9 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
         return tableView
     }()
 
+    private var skillsTableViewLeadingConstraint: NSLayoutConstraint?
+    private var skillsTableViewTrailingConstraint: NSLayoutConstraint?
+
     // MARK: Initialization
 
     let viewModel: OnboardingSkillsViewModel
@@ -149,8 +178,6 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        updateUIForCurrentTraitCollection()
-
         view.addSubview(stackView)
 
         let topSpacerView = UIView.spacerView()
@@ -167,23 +194,24 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
 
         topSpacerView.heightAnchor.constraint(equalTo: bottomSpacerView.heightAnchor).isActive = true
 
+        updateUIForCurrentTraitCollection()
+
+        let tableHeightConstraint = skillsTableView.heightAnchor.constraint(equalToConstant: 180)
+        tableHeightConstraint.isActive = true
+        tableHeightConstraint.priority = .defaultLow
+
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -24),
+            stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
 
             listeningEmojiImageView.heightAnchor.constraint(greaterThanOrEqualToConstant: 20),
-
-            skillsTableView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            skillsTableView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            skillsTableView.heightAnchor.constraint(equalToConstant: 180),
         ])
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-
         if traitCollection.verticalSizeClass != previousTraitCollection?.verticalSizeClass {
             updateUIForCurrentTraitCollection()
         }
@@ -192,16 +220,45 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
     private func updateUIForCurrentTraitCollection() {
         stackView.spacing = preferredStackViewSpacing
 
+        skillsTableView.reloadData()
+        if let selectedIndexPath = viewModel.selectedIndexPath {
+            skillsTableView.selectRow(at: selectedIndexPath, animated: false, scrollPosition: .none)
+        }
+
+        let tableViewConstant: CGFloat = traitCollection.verticalSizeClass == .regular ? 0 : 70
+        if let skillsTableViewLeadingConstraint {
+            skillsTableViewLeadingConstraint.constant = tableViewConstant
+        } else {
+            skillsTableViewLeadingConstraint = skillsTableView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor,
+                                                                                        constant: tableViewConstant)
+            skillsTableViewLeadingConstraint?.isActive = true
+        }
+
+        if let skillsTableViewTrailingConstraint {
+            skillsTableViewTrailingConstraint.constant = -tableViewConstant
+        } else {
+            skillsTableViewTrailingConstraint = skillsTableView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor,
+                                                                                          constant: -tableViewConstant)
+            skillsTableViewTrailingConstraint?.isActive = true
+        }
+
+        // TODO: should be 30 on portrait (any phone), but <= 20 in landscape (probably even less on SE)
+        //stackView.setCustomSpacing(30, after: subtitleLabel)
+
         if traitCollection.verticalSizeClass == .regular {
             titleLabel.font = Constants.titleFontMetrics.scaledFont(for: Constants.titlePreferredFont,
                                                                     maximumPointSize: Constants.titleFontSize)
             subtitleLabel.font = Constants.subtitleFontMetrics.scaledFont(for: Constants.subtitlePreferredFont,
                                                                           maximumPointSize: Constants.subtitleFontSize)
+            skillsTableView.rowHeight = 48
         } else if traitCollection.verticalSizeClass == .compact {
             titleLabel.font = Constants.titleFontMetrics.scaledFont(for: Constants.titlePreferredFont,
                                                                     maximumPointSize: 15)
             subtitleLabel.font = Constants.subtitleFontMetrics.scaledFont(for: Constants.subtitlePreferredFont,
                                                                           maximumPointSize: 10)
+            skillsTableView.rowHeight = UIScreen.main.nativeBounds.width <= 640
+                                            ? 36  // for iPhone SE
+                                            : 42  // for larger iPhones
         }
     }
 }
@@ -227,8 +284,8 @@ extension OnboardingSkillsViewController: UITableViewDataSource {
 
         let skillLevel = viewModel.skillLevel(at: indexPath)
         contentConfiguration.text = skillLevel.rawValue
-
         cell.contentConfiguration = contentConfiguration
+        cell.updateUI(for: traitCollection)
 
         return cell
     }
@@ -242,7 +299,19 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return section == 0 ? 0 : 12
+        if section == 0 {
+            return 0
+        } else if traitCollection.verticalSizeClass == .regular {
+            return 12
+        }
+
+        return UIScreen.main.nativeBounds.width <= 640
+                    ? 3  // for iPhone SE
+                    : 5  // for larger iPhones
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        viewModel.selectedIndexPath = indexPath
     }
 }
 
@@ -257,12 +326,5 @@ fileprivate extension OnboardingSkillsViewController {
         return UIScreen.main.nativeBounds.width <= 640
                     ? 5  // for iPhone SE
                     : 10 // for larger iPhones
-    }
-
-    // TODO: do I need this?
-    var listeningEmojiImageViewPreferredHeight: CGFloat {
-        return UIScreen.main.nativeBounds.width <= 640
-            ? traitCollection.verticalSizeClass == .compact ? 40 : 80 // for iPhone SE
-            : 80 // for larger iPhones
     }
 }
