@@ -8,7 +8,7 @@ final class OnboardingSkillCell: UITableViewCell {
         let preferredFont = UIFont.systemFont(ofSize: 17)
 
         var contentConfiguration: UIListContentConfiguration = defaultContentConfiguration()
-        contentConfiguration.textProperties.color = .label
+        contentConfiguration.textProperties.color = .white
         contentConfiguration.textProperties.font = fontMetrics.scaledFont(for: preferredFont, maximumPointSize: 25)
         self.contentConfiguration = contentConfiguration
 
@@ -30,15 +30,15 @@ final class OnboardingSkillCell: UITableViewCell {
         let isSelected = state.isSelected
 
         var newBackgroundConfiguration = backgroundConfiguration?.updated(for: state)
-        newBackgroundConfiguration?.backgroundColor = .init(white: 1, alpha: state.isHighlighted ? 0.3 : 0.1)
+        newBackgroundConfiguration?.backgroundColor = .init(white: 1, alpha: state.isHighlighted ? 0.25 : 0.1)
         newBackgroundConfiguration?.strokeColor = isSelected ? .tintColor : .clear
 
         var newContentConfiguration = contentConfiguration as! UIListContentConfiguration
         let imageSystemName = state.isSelected ? "checkmark.circle.fill" : "circle"
-        let paletteColors: [UIColor] = isSelected ? [.white, .systemBlue] : [.secondaryLabel, .systemBlue]
+        let paletteColors: [UIColor] = isSelected ? [.white, .systemBlue] : [.init(white: 0.45, alpha: 1), .systemBlue]
         let symbolConfiguration = UIImage.SymbolConfiguration(paletteColors: paletteColors)
             .applying(UIImage.SymbolConfiguration(scale: .large))
-            .applying(UIImage.SymbolConfiguration(weight: .bold))
+            .applying(UIImage.SymbolConfiguration(weight: .semibold))
         newContentConfiguration.imageProperties.preferredSymbolConfiguration = symbolConfiguration
         newContentConfiguration.image = UIImage(systemName: imageSystemName)
 
@@ -106,7 +106,7 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "What’s your DJ skill level?"
         label.textAlignment = .center
-        label.textColor = .secondaryLabel
+        label.textColor = .init(white: 0.7, alpha: 1)
         label.numberOfLines = 0
         label.adjustsFontForContentSizeCategory = true
         label.setContentHuggingPriority(.required, for: .vertical)
