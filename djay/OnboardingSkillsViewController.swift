@@ -54,7 +54,6 @@ final class OnboardingSkillCell: UITableViewCell {
     // MARK: - ??
 
     fileprivate func updateUI(for traitCollection: UITraitCollection) {
-        print("cell.verticalSizeClass: \(traitCollection.verticalSizeClass.rawValue)")
         var newContentConfiguration = contentConfiguration as! UIListContentConfiguration
 
         if traitCollection.verticalSizeClass == .regular {
