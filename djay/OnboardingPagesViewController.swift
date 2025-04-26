@@ -61,7 +61,7 @@ final class OnboardingPagesViewController: UIViewController {
         pages = [
             OnboardingWelcomeViewController(),
             OnboardingMixFavoriteMusicViewController(),
-            OnboardingSelectSkillViewController(),
+            OnboardingSkillsViewController(.init()),
             OnboardingFinaleViewController()
         ]
 
