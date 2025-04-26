@@ -2,8 +2,9 @@ import UIKit
 
 final class OnboardingMixFavoriteMusicViewController: UIViewController, OnboardingPageContent {
     private enum Constants {
+        static let fontSize: CGFloat = 34
         static let fontMetrics = UIFontMetrics(forTextStyle: .largeTitle)
-        static let preferredFont = UIFont.systemFont(ofSize: 34, weight: .bold)
+        static let preferredFont = UIFont.systemFont(ofSize: fontSize, weight: .bold)
     }
 
     var continueButtonTitle: String = "Continue"
@@ -78,7 +79,7 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
 
         if traitCollection.verticalSizeClass == .regular {
             favoriteMusicLabel.font = Constants.fontMetrics.scaledFont(for: Constants.preferredFont,
-                                                                       maximumPointSize: 34)
+                                                                       maximumPointSize: Constants.fontSize)
         } else if traitCollection.verticalSizeClass == .compact {
             favoriteMusicLabel.font = Constants.fontMetrics.scaledFont(for: Constants.preferredFont,
                                                                        maximumPointSize: 15)
