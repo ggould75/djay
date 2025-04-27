@@ -7,8 +7,16 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
         static let preferredFont = UIFont.systemFont(ofSize: fontSize, weight: .bold)
     }
 
+    // MARK: OnboardingPageContent
+    
     var nextPageButtonTitle: String = "Continue"
 
+    func nextPageButtonTapped(completion: @escaping () -> Void) {
+        completion()
+    }
+    
+    // MARK: Subviews setup
+    
     private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false

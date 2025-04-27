@@ -2,6 +2,8 @@ import UIKit
 
 protocol OnboardingPageContent {
     var nextPageButtonTitle: String { get }
+
+    func nextPageButtonTapped(completion: @escaping () -> Void)
 }
 
 final class OnboardingPagesViewController: UIViewController {
@@ -129,11 +131,8 @@ final class OnboardingPagesViewController: UIViewController {
         view.bringSubviewToFront(pageControl)
     }
 
-    @objc private func nextPageButtonTapped() {
-        guard currentPageIndex < pages.count - 1 else {
-            print("Reached finale page. TODO")
-            return
-        }
+    private func navigateToNextPage() {
+        guard currentPageIndex < pages.count - 1 else { return }
 
         currentPageIndex += 1
         pageControl.currentPage = currentPageIndex
@@ -146,6 +145,12 @@ final class OnboardingPagesViewController: UIViewController {
         )
 
         updateNextPageButtonTitle()
+    }
+
+    @objc private func nextPageButtonTapped() {
+        pages[currentPageIndex].nextPageButtonTapped { [weak self] in
+            self?.navigateToNextPage()
+        }
     }
 
     private func updateNextPageButtonTitle() {

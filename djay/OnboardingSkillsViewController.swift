@@ -87,7 +87,17 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
         static let subtitlePreferredFont = UIFont.systemFont(ofSize: subtitleFontSize, weight: .regular)
     }
 
+    // MARK: OnboardingPageContent
+
     var nextPageButtonTitle: String = "Let's Go"
+
+    func nextPageButtonTapped(completion: @escaping () -> Void) {
+        nextPageButtonEnabledChanged(false)
+        prepareSubviewsForTransition { [weak self] in
+            completion()
+            self?.nextPageButtonEnabledChanged(true)
+        }
+    }
 
     // MARK: Subviews setup
 
@@ -316,6 +326,44 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         viewModel.selectedIndexPath = indexPath
         nextPageButtonEnabledChanged(true)
+    }
+
+    // MARK: Animate views before transitiong to the next page
+
+    private func prepareSubviewsForTransition(_ completion: @escaping () -> Void) {
+        let tableViewCells = skillsTableView.visibleCells
+        let tableViewWidth = skillsTableView.bounds.width
+
+        let imageDuration = 0.4
+        let cellDuration = 0.22
+        let cellDelay = 0.12
+        let totalDuration = max(imageDuration, cellDuration + cellDelay * Double(tableViewCells.count - 1))
+
+        UIView.animateKeyframes(
+            withDuration: totalDuration,
+            delay: 0,
+            options: .calculationModeCubic,
+            animations: {
+                UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: imageDuration / totalDuration) {
+                    self.listeningEmojiImageView.transform = CGAffineTransform(scaleX: 2.5, y: 2.5)
+                    self.listeningEmojiImageView.alpha = 0
+                    self.titleLabel.transform = CGAffineTransform(scaleX: 0, y: 0)
+                    self.titleLabel.alpha = 0
+                    self.subtitleLabel.transform = CGAffineTransform(scaleX: 0, y: 0)
+                    self.subtitleLabel.alpha = 0
+                }
+
+                for (index, cell) in tableViewCells.enumerated() {
+                    let startTime = Double(index) * cellDelay / totalDuration
+                    UIView.addKeyframe(withRelativeStartTime: startTime, relativeDuration: cellDuration / totalDuration) {
+                        cell.transform = CGAffineTransform(translationX: -tableViewWidth, y: 0)
+                    }
+                }
+            },
+            completion: { _ in
+                completion()
+            }
+        )
     }
 }
 

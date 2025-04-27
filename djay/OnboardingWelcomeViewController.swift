@@ -1,7 +1,15 @@
 import UIKit
 
 final class OnboardingWelcomeViewController: UIViewController, OnboardingPageContent {
+    // MARK: OnboardingPageContent
+
     var nextPageButtonTitle: String = "Continue"
+
+    func nextPageButtonTapped(completion: @escaping () -> Void) {
+        completion()
+    }
+
+    // MARK: Subviews setup
 
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
