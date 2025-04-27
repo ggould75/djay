@@ -16,7 +16,6 @@ final class OnboardingPagesViewController: UIViewController {
 
         var configuration = UIButton.Configuration.filled()
         configuration.cornerStyle = .large
-        configuration.background.backgroundColor = .systemBlue
         var contentInsets = configuration.contentInsets
         contentInsets.top = 11
         contentInsets.bottom = 11
@@ -32,6 +31,17 @@ final class OnboardingPagesViewController: UIViewController {
 
         let button = UIButton(configuration: configuration)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitleColor(.init(white: 0.6, alpha: 1), for: .disabled)
+        button.configurationUpdateHandler = { button in
+            var configuration = button.configuration
+            if button.isEnabled {
+                configuration?.background.backgroundColor = .systemBlue
+            } else {
+                configuration?.background.backgroundColor = .systemBlue.withAlphaComponent(0.5)
+            }
+
+            button.configuration = configuration
+        }
 
         return button
     }()
