@@ -39,7 +39,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         super.viewDidAppear(animated)
 
         // Given some time to the transition to this view controller to complete so that you don't see the content of this page sliding in
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.startAnimation()
         }
     }
@@ -66,7 +66,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         setupParticleLayers()
 
         if let particleEmitterLayer {
-            particleEmitterLayer.isHidden = false
+            particleEmitterLayer.isHidden = !isAnimationRunning
             particleEmitterLayer.emitterPosition = CGPoint(x: containerBounds.width / 2,
                                                            y: containerBounds.height / 2)
             if particleEmitterLayer.emitterSize == .zero {
@@ -77,7 +77,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         }
 
         if let beatEmitterLayer {
-            beatEmitterLayer.isHidden = false
+            beatEmitterLayer.isHidden = !isAnimationRunning
             beatEmitterLayer.emitterPosition = CGPoint(x: containerBounds.width / 2,
                                                        y: containerBounds.height / 2)
         }
