@@ -7,7 +7,7 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
         static let preferredFont = UIFont.systemFont(ofSize: fontSize, weight: .bold)
     }
 
-    var continueButtonTitle: String = "Continue"
+    var nextPageButtonTitle: String = "Continue"
 
     private let stackView: UIStackView = {
         let stackView = UIStackView()

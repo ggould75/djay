@@ -1,7 +1,7 @@
 import UIKit
 
 protocol OnboardingPageContent {
-    var continueButtonTitle: String { get }
+    var nextPageButtonTitle: String { get }
 }
 
 final class OnboardingPagesViewController: UIViewController {
@@ -10,18 +10,28 @@ final class OnboardingPagesViewController: UIViewController {
     private let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
     private let gradientBackgroundView = GradientBackgroundView()
 
-    private let continueButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-
+    private let nextPageButton: UIButton = {
         let fontMetrics = UIFontMetrics(forTextStyle: .callout)
         let preferredFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
-        button.titleLabel?.font = fontMetrics.scaledFont(for: preferredFont, maximumPointSize: 24)
-        button.titleLabel?.adjustsFontForContentSizeCategory = true
 
-        button.backgroundColor = .systemBlue
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 10
+        var configuration = UIButton.Configuration.filled()
+        configuration.cornerStyle = .large
+        configuration.background.backgroundColor = .systemBlue
+        var contentInsets = configuration.contentInsets
+        contentInsets.top = 11
+        contentInsets.bottom = 11
+        contentInsets.leading = 80
+        contentInsets.trailing = 80
+        configuration.contentInsets = contentInsets
+        configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = fontMetrics.scaledFont(for: preferredFont, maximumPointSize: 24)
+
+            return outgoing
+        }
+
+        let button = UIButton(configuration: configuration)
+        button.translatesAutoresizingMaskIntoConstraints = false
 
         return button
     }()
@@ -61,7 +71,9 @@ final class OnboardingPagesViewController: UIViewController {
         pages = [
             OnboardingWelcomeViewController(),
             OnboardingMixFavoriteMusicViewController(),
-            OnboardingSkillsViewController(.init()),
+            OnboardingSkillsViewController(.init(), nextPageButtonEnabledChanged: { [weak self] isEnabled in
+                self?.nextPageButton.isEnabled = isEnabled
+            }),
             OnboardingFinaleViewController()
         ]
 
@@ -78,38 +90,36 @@ final class OnboardingPagesViewController: UIViewController {
             pageViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
             pageViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageViewController.view.bottomAnchor.constraint(equalTo: continueButton.topAnchor)
+            pageViewController.view.bottomAnchor.constraint(equalTo: nextPageButton.topAnchor)
         ])
 
         pageViewController.didMove(toParent: self)
 
         if let firstPage = pages.first {
             pageViewController.setViewControllers([firstPage], direction: .forward, animated: false, completion: nil)
-            updateContinueButtonTitle()
+            updateNextPageButtonTitle()
         }
     }
 
     private func setupUI() {
-        continueButton.addTarget(self, action: #selector(continueButtonTapped), for: .touchUpInside)
+        nextPageButton.addTarget(self, action: #selector(nextPageButtonTapped), for: .touchUpInside)
 
-        view.addSubview(continueButton)
+        view.addSubview(nextPageButton)
         view.addSubview(pageControl)
 
         NSLayoutConstraint.activate([
-            continueButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            continueButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -20),
-            continueButton.widthAnchor.constraint(equalToConstant: 200),
-            continueButton.heightAnchor.constraint(equalToConstant: 44),
+            nextPageButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            nextPageButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -20),
 
             pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
         ])
 
-        view.bringSubviewToFront(continueButton)
+        view.bringSubviewToFront(nextPageButton)
         view.bringSubviewToFront(pageControl)
     }
 
-    @objc private func continueButtonTapped() {
+    @objc private func nextPageButtonTapped() {
         guard currentPageIndex < pages.count - 1 else {
             print("Reached finale page. TODO")
             return
@@ -125,11 +135,11 @@ final class OnboardingPagesViewController: UIViewController {
             completion: nil
         )
 
-        updateContinueButtonTitle()
+        updateNextPageButtonTitle()
     }
 
-    private func updateContinueButtonTitle() {
+    private func updateNextPageButtonTitle() {
         let currentPage = pages[currentPageIndex]
-        continueButton.setTitle(currentPage.continueButtonTitle, for: .normal)
+        nextPageButton.setTitle(currentPage.nextPageButtonTitle, for: .normal)
     }
 }

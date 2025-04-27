@@ -87,7 +87,7 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
         static let subtitlePreferredFont = UIFont.systemFont(ofSize: subtitleFontSize, weight: .regular)
     }
 
-    var continueButtonTitle: String = "Let's Go"
+    var nextPageButtonTitle: String = "Let's Go"
 
     // MARK: Subviews setup
 
@@ -161,9 +161,11 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
     // MARK: Initialization
 
     let viewModel: OnboardingSkillsViewModel
+    let nextPageButtonEnabledChanged: (Bool) -> Void
 
-    init(_ viewModel: OnboardingSkillsViewModel) {
+    init(_ viewModel: OnboardingSkillsViewModel, nextPageButtonEnabledChanged: @escaping ((Bool) -> Void)) {
         self.viewModel = viewModel
+        self.nextPageButtonEnabledChanged = nextPageButtonEnabledChanged
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -176,6 +178,8 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        nextPageButtonEnabledChanged(false)
 
         view.addSubview(stackView)
 
@@ -311,6 +315,7 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         viewModel.selectedIndexPath = indexPath
+        nextPageButtonEnabledChanged(true)
     }
 }
 

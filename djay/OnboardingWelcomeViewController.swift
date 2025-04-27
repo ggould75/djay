@@ -1,7 +1,7 @@
 import UIKit
 
 final class OnboardingWelcomeViewController: UIViewController, OnboardingPageContent {
-    var continueButtonTitle: String = "Continue"
+    var nextPageButtonTitle: String = "Continue"
 
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
