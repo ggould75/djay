@@ -34,6 +34,8 @@ extension OnboardingPage {
     }
 }
 
+// MARK: -
+
 enum OnboardingPageResult {
     case proceed
     case proceedWithSkillLevel(OnboardingSkillLevel)
@@ -45,6 +47,8 @@ protocol OnboardingPageContent {
 
     func navigationButtonTapped(completion: @escaping (OnboardingPageResult) -> Void)
 }
+
+// MARK: -
 
 final class OnboardingPagesViewController: UIViewController {
     private var currentPage = OnboardingPage.welcome
