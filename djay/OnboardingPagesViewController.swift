@@ -1,18 +1,63 @@
 import UIKit
 
-protocol OnboardingPageContent {
-    var nextPageButtonTitle: String { get }
+enum OnboardingPage: Int, CaseIterable {
+    case welcome
+    case mixFavoriteMusic
+    case skills
+    case finale
+}
 
-    func nextPageButtonTapped(completion: @escaping () -> Void)
+extension OnboardingPage {
+    var next: OnboardingPage? {
+        return OnboardingPage(rawValue: self.rawValue + 1)
+    }
+
+    func viewController(_ arguments: Any...) -> UIViewController & OnboardingPageContent {
+        switch self {
+        case .welcome:
+            return OnboardingWelcomeViewController()
+        case .mixFavoriteMusic:
+            return OnboardingMixFavoriteMusicViewController()
+        case .skills:
+            return OnboardingSkillsViewController(.init())
+        case .finale:
+            guard
+                let skillsPageResult = arguments.first as? OnboardingPageResult,
+                case let .proceedWithSkillLevel(selectedSkillLevel) = skillsPageResult
+            else {
+                assertionFailure("Unexpected arguments configuration")
+                return UIViewController() as! UIViewController & OnboardingPageContent
+            }
+
+            return OnboardingFinaleViewController(selectedSkillLevel)
+        }
+    }
+}
+
+enum OnboardingPageResult {
+    case proceed
+    case proceedWithSkillLevel(OnboardingSkillLevel)
+}
+
+protocol OnboardingPageContent {
+    var navigationButtonTitle: String { get }
+    var navigationButtonEnabledCallback: ((Bool) -> Void)? { get set }
+
+    func navigationButtonTapped(completion: @escaping (OnboardingPageResult) -> Void)
 }
 
 final class OnboardingPagesViewController: UIViewController {
-    private var pages = [UIViewController & OnboardingPageContent]()
-    private var currentPageIndex = 0
-    private let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-    private let gradientBackgroundView = GradientBackgroundView()
+    private var currentPage = OnboardingPage.welcome
 
-    private let nextPageButton: UIButton = {
+    private let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+
+    var currentViewController: (UIViewController & OnboardingPageContent)? {
+        return pageViewController.viewControllers?.first as? UIViewController & OnboardingPageContent
+    }
+
+    // MARK: Subviews setup
+
+    private let navigationButton: UIButton = {
         let fontMetrics = UIFontMetrics(forTextStyle: .callout)
         let preferredFont = UIFont.systemFont(ofSize: 18, weight: .semibold)
 
@@ -58,16 +103,8 @@ final class OnboardingPagesViewController: UIViewController {
         return control
     }()
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        setupGradientBackground()
-        setupUI()
-        setupPages()
-        setupPageViewController()
-    }
-
     private func setupGradientBackground() {
+        let gradientBackgroundView = GradientBackgroundView()
         gradientBackgroundView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(gradientBackgroundView)
 
@@ -79,19 +116,37 @@ final class OnboardingPagesViewController: UIViewController {
         ])
     }
 
-    private func setupPages() {
-        pages = [
-            OnboardingWelcomeViewController(),
-            OnboardingMixFavoriteMusicViewController(),
-            OnboardingSkillsViewController(.init(), nextPageButtonEnabledChanged: { [weak self] isEnabled in
-                self?.nextPageButton.isEnabled = isEnabled
-            }),
-            OnboardingFinaleViewController()
-        ]
+    private func setupUI() {
+        navigationButton.addTarget(self, action: #selector(navigationButtonTapped), for: .touchUpInside)
 
-        pageControl.numberOfPages = pages.count
-        pageControl.currentPage = 0
+        view.addSubview(navigationButton)
+        view.addSubview(pageControl)
+
+        NSLayoutConstraint.activate([
+            navigationButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            navigationButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -20),
+
+            pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+        ])
+
+        view.bringSubviewToFront(navigationButton)
+        view.bringSubviewToFront(pageControl)
+
+        pageControl.numberOfPages = OnboardingPage.allCases.count
     }
+
+    // MARK: View Lifecycle
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        setupGradientBackground()
+        setupUI()
+        setupPageViewController()
+    }
+
+    // MARK: Page navigation
 
     private func setupPageViewController() {
         addChild(pageViewController)
@@ -102,59 +157,51 @@ final class OnboardingPagesViewController: UIViewController {
             pageViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
             pageViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             pageViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageViewController.view.bottomAnchor.constraint(equalTo: nextPageButton.topAnchor)
+            pageViewController.view.bottomAnchor.constraint(equalTo: navigationButton.topAnchor)
         ])
 
         pageViewController.didMove(toParent: self)
 
-        if let firstPage = pages.first {
-            pageViewController.setViewControllers([firstPage], direction: .forward, animated: false, completion: nil)
-            updateNextPageButtonTitle()
+        var firstViewController = currentPage.viewController()
+        firstViewController.navigationButtonEnabledCallback = { [weak self] enabled in
+            self?.navigationButton.isEnabled = enabled
         }
+
+        pageViewController.setViewControllers([firstViewController],
+                                              direction: .forward,
+                                              animated: false,
+                                              completion: nil)
+        updateNavigationButtonTitle()
     }
 
-    private func setupUI() {
-        nextPageButton.addTarget(self, action: #selector(nextPageButtonTapped), for: .touchUpInside)
+    private func navigateToNextPage(previousPageResult: OnboardingPageResult) {
+        guard let nextPage = currentPage.next else { return }
 
-        view.addSubview(nextPageButton)
-        view.addSubview(pageControl)
+        currentPage = nextPage
+        pageControl.currentPage = currentPage.rawValue
 
-        NSLayoutConstraint.activate([
-            nextPageButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            nextPageButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -20),
-
-            pageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            pageControl.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-        ])
-
-        view.bringSubviewToFront(nextPageButton)
-        view.bringSubviewToFront(pageControl)
-    }
-
-    private func navigateToNextPage() {
-        guard currentPageIndex < pages.count - 1 else { return }
-
-        currentPageIndex += 1
-        pageControl.currentPage = currentPageIndex
+        var nextPageViewController = currentPage.viewController(previousPageResult)
+        nextPageViewController.navigationButtonEnabledCallback = { [weak self] enabled in
+            self?.navigationButton.isEnabled = enabled
+        }
 
         pageViewController.setViewControllers(
-            [pages[currentPageIndex]],
+            [nextPageViewController],
             direction: .forward,
             animated: true,
             completion: nil
         )
 
-        updateNextPageButtonTitle()
+        updateNavigationButtonTitle()
     }
 
-    @objc private func nextPageButtonTapped() {
-        pages[currentPageIndex].nextPageButtonTapped { [weak self] in
-            self?.navigateToNextPage()
+    @objc private func navigationButtonTapped() {
+        currentViewController?.navigationButtonTapped { [weak self] result in
+            self?.navigateToNextPage(previousPageResult: result)
         }
     }
 
-    private func updateNextPageButtonTitle() {
-        let currentPage = pages[currentPageIndex]
-        nextPageButton.setTitle(currentPage.nextPageButtonTitle, for: .normal)
+    private func updateNavigationButtonTitle() {
+        navigationButton.setTitle(currentViewController?.navigationButtonTitle, for: .normal)
     }
 }

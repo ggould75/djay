@@ -89,13 +89,18 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
 
     // MARK: OnboardingPageContent
 
-    var nextPageButtonTitle: String = "Let's Go"
-
-    func nextPageButtonTapped(completion: @escaping () -> Void) {
-        nextPageButtonEnabledChanged(false)
+    var navigationButtonTitle: String = "Let's Go"
+    var navigationButtonEnabledCallback: ((Bool) -> Void)?
+    
+    func navigationButtonTapped(completion: @escaping (OnboardingPageResult) -> Void) {
+        navigationButtonEnabledCallback?(false)
         prepareSubviewsForTransition { [weak self] in
-            completion()
-            self?.nextPageButtonEnabledChanged(true)
+            guard let self, let selectedSkillLevel = self.viewModel.selectedSkillLevel else {
+                return
+            }
+
+            completion(.proceedWithSkillLevel(selectedSkillLevel))
+            self.navigationButtonEnabledCallback?(true)
         }
     }
 
@@ -171,11 +176,9 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
     // MARK: Initialization
 
     let viewModel: OnboardingSkillsViewModel
-    let nextPageButtonEnabledChanged: (Bool) -> Void
 
-    init(_ viewModel: OnboardingSkillsViewModel, nextPageButtonEnabledChanged: @escaping ((Bool) -> Void)) {
+    init(_ viewModel: OnboardingSkillsViewModel) {
         self.viewModel = viewModel
-        self.nextPageButtonEnabledChanged = nextPageButtonEnabledChanged
 
         super.init(nibName: nil, bundle: nil)
     }
@@ -189,7 +192,7 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        nextPageButtonEnabledChanged(false)
+        navigationButtonEnabledCallback?(false)
 
         view.addSubview(stackView)
 
@@ -325,7 +328,7 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         viewModel.selectedIndexPath = indexPath
-        nextPageButtonEnabledChanged(true)
+        navigationButtonEnabledCallback?(true)
     }
 
     // MARK: Animate views before transitiong to the next page

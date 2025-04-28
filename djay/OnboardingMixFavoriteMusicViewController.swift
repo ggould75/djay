@@ -9,10 +9,11 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
 
     // MARK: OnboardingPageContent
     
-    var nextPageButtonTitle: String = "Continue"
-
-    func nextPageButtonTapped(completion: @escaping () -> Void) {
-        completion()
+    var navigationButtonTitle: String = "Continue"
+    var navigationButtonEnabledCallback: ((Bool) -> Void)?
+    
+    func navigationButtonTapped(completion: @escaping (OnboardingPageResult) -> Void) {
+        completion(.proceed)
     }
     
     // MARK: Subviews setup

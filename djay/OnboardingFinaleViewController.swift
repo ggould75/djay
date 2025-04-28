@@ -8,10 +8,25 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
     // MARK: - OnboardingPageContent
 
-    var nextPageButtonTitle: String = "Done"
+    var navigationButtonTitle: String = "Done"
+    var navigationButtonEnabledCallback: ((Bool) -> Void)?
+    
+    func navigationButtonTapped(completion: @escaping (OnboardingPageResult) -> Void) {
+        completion(.proceed)
+    }
 
-    func nextPageButtonTapped(completion: @escaping () -> Void) {
-        completion()
+    // MARK: Initialization
+
+    let onboardingSkillLevel: OnboardingSkillLevel
+
+    init(_ onboardingSkillLevel: OnboardingSkillLevel) {
+        self.onboardingSkillLevel = onboardingSkillLevel
+
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     // MARK: - View Lifecycle

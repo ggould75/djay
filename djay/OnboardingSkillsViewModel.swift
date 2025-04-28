@@ -1,23 +1,28 @@
 import Foundation
 
-final class OnboardingSkillsViewModel {
-    enum SkillLevel: String, CaseIterable {
-        case newbie = "I'm new to DJing"
-        case experienced = "I've used DJ apps before"
-        case professional = "I'm a professional DJ"
-    }
+enum OnboardingSkillLevel: String, CaseIterable {
+    case newbie = "I'm new to DJing"
+    case experienced = "I've used DJ apps before"
+    case professional = "I'm a professional DJ"
+}
 
+final class OnboardingSkillsViewModel {
     var skillCount: Int {
-        return SkillLevel.allCases.count
+        return OnboardingSkillLevel.allCases.count
     }
 
     var selectedIndexPath: IndexPath?
+    var selectedSkillLevel: OnboardingSkillLevel? {
+        guard let selectedIndexPath else { return nil }
 
-    func skillLevel(at indexPath: IndexPath) -> SkillLevel {
-        return SkillLevel.allCases[indexPath.section]
+        return skillLevel(at: selectedIndexPath)
     }
 
-    func indexPath(for skillLevel: SkillLevel) -> IndexPath? {
+    func skillLevel(at indexPath: IndexPath) -> OnboardingSkillLevel {
+        return OnboardingSkillLevel.allCases[indexPath.section]
+    }
+
+    func indexPath(for skillLevel: OnboardingSkillLevel) -> IndexPath? {
         guard let rowIndex = skillLevel.index else {
             return nil
         }
