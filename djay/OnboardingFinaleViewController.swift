@@ -6,7 +6,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         static let vinylRecordDiameter = 200
     }
 
-    // MARK: OnboardingPageContent
+    // MARK: - OnboardingPageContent
 
     var nextPageButtonTitle: String = "Done"
 
@@ -14,19 +14,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         completion()
     }
 
-    private let animationContainerView = UIView()
-
-    private let vinylRecordLayer = CAShapeLayer()
-    private var particleEmitterLayer: CAEmitterLayer?
-    private var beatEmitterLayer: CAEmitterLayer?
-
-    private var audioPlayer: AVAudioPlayer?
-    private var audioEngine: AVAudioEngine?
-    private var audioPlayerNode: AVAudioPlayerNode?
-    private var audioFile: AVAudioFile?
-    private var fftSize: UInt32 = 1024
-
-    // MARK: View Lifecycle
+    // MARK: - View Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,6 +71,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         }
     }
 
+    // MARK: - UIContentContainer
+
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
 
@@ -93,6 +83,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         beatEmitterLayer = nil
         setupParticleLayers()
     }
+
+    // MARK: - Subviews setup
+
+    private let animationContainerView = UIView()
 
     private func setupViews() {
         animationContainerView.translatesAutoresizingMaskIntoConstraints = false
@@ -105,6 +99,12 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
             animationContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
+
+    // MARK: - Layers and animation setup
+
+    private let vinylRecordLayer = CAShapeLayer()
+    private var particleEmitterLayer: CAEmitterLayer?
+    private var beatEmitterLayer: CAEmitterLayer?
 
     private func setupVinylRecordLayer() {
         // Outer path
@@ -128,110 +128,6 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         vinylRecordLayer.opacity = 0
 
         animationContainerView.layer.addSublayer(vinylRecordLayer)
-    }
-
-    private func setupAudio() {
-        if let audioURL = Bundle.main.url(forResource: "finale-audio", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
-                audioPlayer?.prepareToPlay()
-
-                setupAudioEngine(with: audioURL)
-            } catch {
-                assertionFailure("Error loading audio: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    private func setupAudioEngine(with url: URL) {
-        audioEngine = AVAudioEngine()
-        audioPlayerNode = AVAudioPlayerNode()
-
-        guard let audioEngine = audioEngine,
-              let audioPlayerNode = audioPlayerNode else { return }
-
-        do {
-            audioFile = try AVAudioFile(forReading: url)
-            audioEngine.attach(audioPlayerNode)
-
-            // Add a tap to monitor audio output
-            let mixer = audioEngine.mainMixerNode
-            let format = mixer.outputFormat(forBus: 0)
-
-            audioEngine.connect(audioPlayerNode, to: mixer, format: format)
-
-            // Install tap to get PCM buffer data for visualization
-            mixer.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
-                self?.processAudioBuffer(buffer)
-            }
-
-            try audioEngine.start()
-
-        } catch {
-            assertionFailure("Error setting up audio engine: \(error.localizedDescription)")
-        }
-    }
-
-    private func processAudioBuffer(_ buffer: AVAudioPCMBuffer) {
-        // Simple amplitude detection for demo purposes
-        guard let channelData = buffer.floatChannelData?[0] else { return }
-
-        let frameCount = Int(buffer.frameLength)
-        var sum: Float = 0
-
-        for i in 0 ..< frameCount {
-            let amplitude = abs(channelData[i])
-            sum += amplitude
-        }
-
-        // The average amplitude
-        let avgAmplitude = sum / Float(frameCount)
-
-        // Use this amplitude to drive particle animation
-        DispatchQueue.main.async { [weak self] in
-            self?.updateParticlesWithAmplitude(avgAmplitude)
-        }
-    }
-
-    private func updateParticlesWithAmplitude(_ amplitude: Float) {
-        // Scale amplitude to reasonable values
-        let scaledAmplitude = min(2.0, amplitude * 10.0)
-
-        // Update particle emitter properties based on amplitude
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-
-        particleEmitterLayer?.emitterCells?.forEach { cell in
-            cell.velocity = 100 + CGFloat(scaledAmplitude * 150)
-            cell.scale = 0.5 + CGFloat(scaledAmplitude * 0.5)
-        }
-
-        // If amplitude exceeds threshold, emit a "beat" particle burst
-        if scaledAmplitude > 0.8 {
-            emitBeatParticles()
-        }
-
-        CATransaction.commit()
-    }
-
-    // Create a quick burst of larger particles on beat detection
-    private func emitBeatParticles() {
-        guard let beatEmitterLayer else { return }
-
-        // Briefly increase birthrate then reduce it
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        beatEmitterLayer.beginTime = CACurrentMediaTime()
-        beatEmitterLayer.birthRate = 20
-        CATransaction.commit()
-
-        // Reset birthrate after short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            beatEmitterLayer.birthRate = 0
-            CATransaction.commit()
-        }
     }
 
     private func setupParticleLayers() {
@@ -318,6 +214,146 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         return cell
     }
 
+    private func updateParticlesWithAmplitude(_ amplitude: Float) {
+        // Scale amplitude to reasonable values
+        let scaledAmplitude = min(2.0, amplitude * 10.0)
+
+        // Update particle emitter properties based on amplitude
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+
+        particleEmitterLayer?.emitterCells?.forEach { cell in
+            cell.velocity = 100 + CGFloat(scaledAmplitude * 150)
+            cell.scale = 0.5 + CGFloat(scaledAmplitude * 0.5)
+        }
+
+        // If amplitude exceeds threshold, emit a "beat" particle burst
+        if scaledAmplitude > 0.8 {
+            emitBeatParticles()
+        }
+
+        CATransaction.commit()
+    }
+
+    // Create a quick burst of larger particles on beat detection
+    private func emitBeatParticles() {
+        guard let beatEmitterLayer else { return }
+
+        // Briefly increase birthrate then reduce it
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        beatEmitterLayer.beginTime = CACurrentMediaTime()
+        beatEmitterLayer.birthRate = 20
+        CATransaction.commit()
+
+        // Reset birthrate after short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            beatEmitterLayer.birthRate = 0
+            CATransaction.commit()
+        }
+    }
+
+    private func animateVinylRecordAppearance() {
+        let fadeInAnimation = CABasicAnimation(keyPath: "opacity")
+        fadeInAnimation.fromValue = 0.0
+        fadeInAnimation.toValue = 1.0
+        fadeInAnimation.duration = 2.0
+
+        let shimmerEffectAnimation = CABasicAnimation(keyPath: "strokeColor")
+        shimmerEffectAnimation.fromValue = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0).cgColor
+        shimmerEffectAnimation.toValue = UIColor(red: 1.0, green: 0.9, blue: 0.2, alpha: 1.0).cgColor
+        shimmerEffectAnimation.duration = 1.0
+        shimmerEffectAnimation.autoreverses = true
+        shimmerEffectAnimation.repeatCount = Float.infinity
+
+        vinylRecordLayer.add(fadeInAnimation, forKey: "fadeIn")
+        vinylRecordLayer.add(shimmerEffectAnimation, forKey: "shimmer")
+        vinylRecordLayer.opacity = 1.0
+    }
+
+    // MARK: - Audio setup
+
+    private var audioPlayer: AVAudioPlayer?
+    private var audioEngine: AVAudioEngine?
+    private var audioPlayerNode: AVAudioPlayerNode?
+    private var audioFile: AVAudioFile?
+    private var fftSize: UInt32 = 1024
+
+    private func setupAudio() {
+        if let audioURL = Bundle.main.url(forResource: "finale-audio", withExtension: "mp3") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
+                audioPlayer?.prepareToPlay()
+
+                setupAudioEngine(with: audioURL)
+            } catch {
+                assertionFailure("Error loading audio: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func setupAudioEngine(with url: URL) {
+        audioEngine = AVAudioEngine()
+        audioPlayerNode = AVAudioPlayerNode()
+
+        guard let audioEngine, let audioPlayerNode else { return }
+
+        do {
+            audioFile = try AVAudioFile(forReading: url)
+            audioEngine.attach(audioPlayerNode)
+
+            // Add a tap to monitor audio output
+            let mixer = audioEngine.mainMixerNode
+            let format = mixer.outputFormat(forBus: 0)
+
+            audioEngine.connect(audioPlayerNode, to: mixer, format: format)
+
+            // Install tap to get PCM buffer data for visualization
+            mixer.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+                self?.processAudioBuffer(buffer)
+            }
+
+            try audioEngine.start()
+
+        } catch {
+            assertionFailure("Error setting up audio engine: \(error.localizedDescription)")
+        }
+    }
+
+    private func processAudioBuffer(_ buffer: AVAudioPCMBuffer) {
+        // Simple amplitude detection for demo purposes
+        guard let channelData = buffer.floatChannelData?[0] else { return }
+
+        let frameCount = Int(buffer.frameLength)
+        var sum: Float = 0
+
+        for i in 0 ..< frameCount {
+            let amplitude = abs(channelData[i])
+            sum += amplitude
+        }
+
+        // The average amplitude
+        let avgAmplitude = sum / Float(frameCount)
+
+        // Use this amplitude to drive particle animation
+        DispatchQueue.main.async { [weak self] in
+            self?.updateParticlesWithAmplitude(avgAmplitude)
+        }
+    }
+
+    private func scheduleAudioStart() {
+        guard let audioFile else { return }
+
+        audioPlayerNode?.scheduleFile(audioFile, at: nil, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+            // Restart again the audio file when complete
+            self?.scheduleAudioStart()
+        }
+    }
+
+    // MARK: - Start/Stop animation
+
     private var isAnimationRunning = false
 
     private func startAnimation() {
@@ -329,7 +365,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         particleEmitterLayer?.isHidden = false
         beatEmitterLayer?.isHidden = false
 
-        scheduleAudioAndPlay()
+        scheduleAudioStart()
         audioPlayerNode?.play()
 
         // Animate vinyl record layer appearance
@@ -351,32 +387,5 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         vinylRecordLayer.removeAllAnimations()
 
         isAnimationRunning = false
-    }
-
-    private func scheduleAudioAndPlay() {
-        guard let audioFile else { return }
-
-        audioPlayerNode?.scheduleFile(audioFile, at: nil, completionCallbackType: .dataPlayedBack) { [weak self] _ in
-            // Restart again the audio file when complete
-            self?.scheduleAudioAndPlay()
-        }
-    }
-
-    private func animateVinylRecordAppearance() {
-        let fadeInAnimation = CABasicAnimation(keyPath: "opacity")
-        fadeInAnimation.fromValue = 0.0
-        fadeInAnimation.toValue = 1.0
-        fadeInAnimation.duration = 2.0
-
-        let shimmerEffectAnimation = CABasicAnimation(keyPath: "strokeColor")
-        shimmerEffectAnimation.fromValue = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0).cgColor
-        shimmerEffectAnimation.toValue = UIColor(red: 1.0, green: 0.9, blue: 0.2, alpha: 1.0).cgColor
-        shimmerEffectAnimation.duration = 1.0
-        shimmerEffectAnimation.autoreverses = true
-        shimmerEffectAnimation.repeatCount = Float.infinity
-
-        vinylRecordLayer.add(fadeInAnimation, forKey: "fadeIn")
-        vinylRecordLayer.add(shimmerEffectAnimation, forKey: "shimmer")
-        vinylRecordLayer.opacity = 1.0
     }
 }

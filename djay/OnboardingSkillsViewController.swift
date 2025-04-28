@@ -51,7 +51,7 @@ final class OnboardingSkillCell: UITableViewCell {
         }
     }
 
-    // MARK: - ??
+    // MARK: UI updates
 
     fileprivate func updateUI(for traitCollection: UITraitCollection) {
         var newContentConfiguration = contentConfiguration as! UIListContentConfiguration
