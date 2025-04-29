@@ -170,10 +170,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         guard particleEmitterLayer == nil, beatEmitterLayer == nil else { return }
 
         // Main spectrum particle emitter
-        let particleEmitter = CAEmitterLayer()
-        particleEmitter.emitterShape = .circle
-        particleEmitter.renderMode = .additive
-        particleEmitter.isHidden = true
+        let particleEmitterLayer = CAEmitterLayer()
+        particleEmitterLayer.emitterShape = .circle
+        particleEmitterLayer.renderMode = .additive
+        particleEmitterLayer.isHidden = true
 
         var emitterCells: [CAEmitterCell] = []
 
@@ -196,17 +196,17 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         emitterCells.append(orangeCell)
         emitterCells.append(whiteCell)
 
-        particleEmitter.emitterCells = emitterCells
-        animationContainerView.layer.addSublayer(particleEmitter)
-        self.particleEmitterLayer = particleEmitter
+        particleEmitterLayer.emitterCells = emitterCells
+        animationContainerView.layer.addSublayer(particleEmitterLayer)
+        self.particleEmitterLayer = particleEmitterLayer
 
         // An emitter for following the music's beats
-        let beatEmitter = CAEmitterLayer()
-        beatEmitter.emitterShape = .circle
-        beatEmitter.emitterSize = CGSize(width: 10, height: 10)
-        beatEmitter.renderMode = .additive
-        beatEmitter.birthRate = 0 // Start with no particles
-        beatEmitter.isHidden = true
+        let beatEmitterLayer = CAEmitterLayer()
+        beatEmitterLayer.emitterShape = .circle
+        beatEmitterLayer.emitterSize = CGSize(width: 10, height: 10)
+        beatEmitterLayer.renderMode = .additive
+        beatEmitterLayer.birthRate = 0 // Start with no particles
+        beatEmitterLayer.isHidden = true
 
         let beatCell = createEmitterCell(color: UIColor(red: 1.0, green: 1.0, blue: 0.3, alpha: 0.9),
                                          velocity: 200,
@@ -214,9 +214,9 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
                                          lifetime: 0.8)
         beatCell.birthRate = 20
 
-        beatEmitter.emitterCells = [beatCell]
-        animationContainerView.layer.addSublayer(beatEmitter)
-        self.beatEmitterLayer = beatEmitter
+        beatEmitterLayer.emitterCells = [beatCell]
+        animationContainerView.layer.addSublayer(beatEmitterLayer)
+        self.beatEmitterLayer = beatEmitterLayer
     }
 
     private func createEmitterCell(color: UIColor, velocity: CGFloat, scale: CGFloat, lifetime: Float) -> CAEmitterCell {
