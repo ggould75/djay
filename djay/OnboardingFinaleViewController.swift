@@ -155,7 +155,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         vinylPath.append(innerRingPath)
 
         vinylRecordLayer.path = vinylPath.cgPath
-        vinylRecordLayer.fillColor = UIColor.clear.cgColor
+        vinylRecordLayer.fillColor = UIColor(white: 1, alpha: 0.05).cgColor
         vinylRecordLayer.strokeColor = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0).cgColor
         vinylRecordLayer.lineWidth = 2.0
         vinylRecordLayer.position = CGPoint(x: view.bounds.width/2 - CGFloat(vinylRecordRadius),
