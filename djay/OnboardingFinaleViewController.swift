@@ -76,7 +76,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
                                                 y: containerBounds.height / 2 - vinylRecordRadius)
         }
 
-        if textPathLayer == nil {
+        if textOnPathLayer == nil {
             setupTextOnPathLayer()
         } else {
             updateTextPathPosition()
@@ -139,7 +139,6 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     private var beatEmitterLayer: CAEmitterLayer?
 
     private let textLayer = CATextLayer()
-    private var textPathLayer: CAShapeLayer?
     private var textOnPathLayer: CALayer?
 
     private func setupVinylRecordLayer() {
@@ -312,21 +311,12 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     private func setupTextOnPathLayer() {
         // Get the vinyl position, which is at the top-left corner
         let vinylRecordRadius = CGFloat(Constants.vinylRecordDiameter / 2)
-        let vinylCenterX = vinylRecordLayer.position.x + vinylRecordRadius
-        let vinylCenterY = vinylRecordLayer.position.y + vinylRecordRadius
-
-        let vinylCenterPoint = CGPoint(x: vinylCenterX, y: vinylCenterY)
+        let vinylCenterPoint = CGPoint(x: vinylRecordLayer.position.x + vinylRecordRadius,
+                                       y: vinylRecordLayer.position.y + vinylRecordRadius)
 
         // Calculate the path radius - between outer and inner paths
         let innerRingRadius = CGFloat(Constants.vinylRecordDiameter / 4)
         let textPathRadius = (vinylRecordRadius + innerRingRadius) / 2
-
-        // Create path layer for reference. TODO: do I still need this?
-        let pathLayer = CAShapeLayer()
-        pathLayer.fillColor = UIColor.clear.cgColor
-        pathLayer.strokeColor = UIColor.clear.cgColor
-        animationContainerView.layer.addSublayer(pathLayer)
-        self.textPathLayer = pathLayer
 
         // Create container layer for the text that will rotate
         let circularTextLayer = CALayer()
