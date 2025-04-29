@@ -1,6 +1,16 @@
 import UIKit
 import AVFoundation
 
+extension OnboardingSkillLevel {
+    var congratulationMessage: String {
+        switch self {
+        case .newbie: "WELCOME TO THE WORLD OF DJING • START YOUR JOURNEY • "
+        case .experienced: "LEVEL UP YOUR DJ SKILLS • WELCOME BACK • "
+        case .professional: "PRO DJ • MASTER THE MIX • DROP THE BEAT • "
+        }
+    }
+}
+
 final class OnboardingFinaleViewController: UIViewController, OnboardingPageContent {
     private enum Constants {
         static let vinylRecordDiameter = 200
@@ -66,6 +76,12 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
                                                 y: containerBounds.height / 2 - vinylRecordRadius)
         }
 
+        if textPathLayer == nil {
+            setupTextOnPathLayer()
+        } else {
+            updateTextPathPosition()
+        }
+
         setupParticleLayers()
 
         if let particleEmitterLayer {
@@ -118,8 +134,13 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     // MARK: - Layers and animation setup
 
     private let vinylRecordLayer = CAShapeLayer()
+
     private var particleEmitterLayer: CAEmitterLayer?
     private var beatEmitterLayer: CAEmitterLayer?
+
+    private let textLayer = CATextLayer()
+    private var textPathLayer: CAShapeLayer?
+    private var textOnPathLayer: CALayer?
 
     private func setupVinylRecordLayer() {
         // Outer path
@@ -272,20 +293,108 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
     private func animateVinylRecordAppearance() {
         let fadeInAnimation = CABasicAnimation(keyPath: "opacity")
-        fadeInAnimation.fromValue = 0.0
-        fadeInAnimation.toValue = 1.0
-        fadeInAnimation.duration = 2.0
+        fadeInAnimation.fromValue = 0
+        fadeInAnimation.toValue = 1
+        fadeInAnimation.duration = 2
 
         let shimmerEffectAnimation = CABasicAnimation(keyPath: "strokeColor")
         shimmerEffectAnimation.fromValue = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0).cgColor
         shimmerEffectAnimation.toValue = UIColor(red: 1.0, green: 0.9, blue: 0.2, alpha: 1.0).cgColor
-        shimmerEffectAnimation.duration = 1.0
+        shimmerEffectAnimation.duration = 1
         shimmerEffectAnimation.autoreverses = true
         shimmerEffectAnimation.repeatCount = Float.infinity
 
         vinylRecordLayer.add(fadeInAnimation, forKey: "fadeIn")
         vinylRecordLayer.add(shimmerEffectAnimation, forKey: "shimmer")
-        vinylRecordLayer.opacity = 1.0
+        vinylRecordLayer.opacity = 1
+    }
+
+    private func setupTextOnPathLayer() {
+        // Get the vinyl position, which is at the top-left corner
+        let vinylRecordRadius = CGFloat(Constants.vinylRecordDiameter / 2)
+        let vinylCenterX = vinylRecordLayer.position.x + vinylRecordRadius
+        let vinylCenterY = vinylRecordLayer.position.y + vinylRecordRadius
+
+        let vinylCenterPoint = CGPoint(x: vinylCenterX, y: vinylCenterY)
+
+        // Calculate the path radius - between outer and inner paths
+        let innerRingRadius = CGFloat(Constants.vinylRecordDiameter / 4)
+        let textPathRadius = (vinylRecordRadius + innerRingRadius) / 2
+
+        // Create path layer for reference. TODO: do I still need this?
+        let pathLayer = CAShapeLayer()
+        pathLayer.fillColor = UIColor.clear.cgColor
+        pathLayer.strokeColor = UIColor.clear.cgColor
+        animationContainerView.layer.addSublayer(pathLayer)
+        self.textPathLayer = pathLayer
+
+        // Create container layer for the text that will rotate
+        let circularTextLayer = CALayer()
+        circularTextLayer.position = vinylCenterPoint
+        animationContainerView.layer.addSublayer(circularTextLayer)
+        self.textOnPathLayer = circularTextLayer
+
+        // Create individual character layers around the path
+        let characters = Array(onboardingSkillLevel.congratulationMessage)
+        let angleBetweenChars = (2.0 * .pi) / CGFloat(characters.count)
+
+        for (index, character) in characters.enumerated() {
+            let charLayer = CATextLayer()
+            charLayer.string = String(character)
+            charLayer.fontSize = 12
+            charLayer.alignmentMode = .center
+            charLayer.foregroundColor = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0).cgColor
+            charLayer.frame = CGRect(x: -8, y: -8, width: 16, height: 16) // Center the character in its own frame
+
+            // Calculate position on circle relative to the container's center
+            let angle = CGFloat(index) * angleBetweenChars
+            let x = textPathRadius * cos(angle)
+            let y = textPathRadius * sin(angle)
+
+            // Position and rotate each character to face outward from center
+            charLayer.position = CGPoint(x: x, y: y)
+            charLayer.transform = CATransform3DMakeRotation(angle + (.pi / 2), 0, 0, 1)
+
+            circularTextLayer.addSublayer(charLayer)
+        }
+
+        circularTextLayer.opacity = 0
+    }
+
+    private func updateTextPathPosition() {
+        guard let textOnPathLayer = textOnPathLayer else { return }
+
+        let vinylRecordRadius = CGFloat(Constants.vinylRecordDiameter / 2)
+        let vinylCenterX = vinylRecordLayer.position.x + vinylRecordRadius
+        let vinylCenterY = vinylRecordLayer.position.y + vinylRecordRadius
+        let vinylCenterPoint = CGPoint(x: vinylCenterX, y: vinylCenterY)
+
+        textOnPathLayer.position = vinylCenterPoint
+    }
+
+    private func animateCircularText() {
+        guard let textOnPathLayer else { return }
+
+        // Rotate the whole text
+        let rotationAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
+        rotationAnimation.fromValue = 0
+        rotationAnimation.toValue = 2 * Double.pi
+        rotationAnimation.duration = 12 // Full rotation every 12 seconds
+        rotationAnimation.repeatCount = Float.infinity
+        rotationAnimation.isRemovedOnCompletion = false
+
+        textOnPathLayer.add(rotationAnimation, forKey: "rotation")
+
+        // Fade in the text after some delay
+        let fadeInAnimation = CABasicAnimation(keyPath: "opacity")
+        fadeInAnimation.fromValue = 0
+        fadeInAnimation.toValue = 1
+        fadeInAnimation.duration = 2.5
+        fadeInAnimation.isRemovedOnCompletion = false
+        fadeInAnimation.fillMode = .backwards
+        fadeInAnimation.beginTime = CACurrentMediaTime() + 3
+        textOnPathLayer.add(fadeInAnimation, forKey: "fadeIn")
+        textOnPathLayer.opacity = 1
     }
 
     // MARK: - Audio setup
@@ -297,15 +406,17 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     private var fftSize: UInt32 = 1024
 
     private func setupAudio() {
-        if let audioURL = Bundle.main.url(forResource: "finale-audio", withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
-                audioPlayer?.prepareToPlay()
+        guard let audioURL = Bundle.main.url(forResource: "finale-audio", withExtension: "mp3") else {
+            return
+        }
 
-                setupAudioEngine(with: audioURL)
-            } catch {
-                assertionFailure("Error loading audio: \(error.localizedDescription)")
-            }
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: audioURL)
+            audioPlayer?.prepareToPlay()
+
+            setupAudioEngine(with: audioURL)
+        } catch {
+            assertionFailure("Error loading audio: \(error.localizedDescription)")
         }
     }
 
@@ -380,10 +491,11 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         particleEmitterLayer?.isHidden = false
         beatEmitterLayer?.isHidden = false
 
+        animateCircularText()
+
         scheduleAudioStart()
         audioPlayerNode?.play()
 
-        // Animate vinyl record layer appearance
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
             self.animateVinylRecordAppearance()
         }
@@ -395,11 +507,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         audioPlayerNode?.stop()
         audioEngine?.stop()
 
-        // Remove audio tap
         audioEngine?.mainMixerNode.removeTap(onBus: 0)
 
-        // Stop animations
         vinylRecordLayer.removeAllAnimations()
+        textOnPathLayer?.removeAllAnimations()
 
         isAnimationRunning = false
     }
