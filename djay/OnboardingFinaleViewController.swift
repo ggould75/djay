@@ -14,6 +14,7 @@ extension OnboardingSkillLevel {
 final class OnboardingFinaleViewController: UIViewController, OnboardingPageContent {
     private enum Constants {
         static let vinylRecordDiameter = 200
+        static let vinylRecordBeginTime = CACurrentMediaTime() + 2
     }
 
     // MARK: - OnboardingPageContent
@@ -155,7 +156,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         vinylPath.append(innerRingPath)
 
         vinylRecordLayer.path = vinylPath.cgPath
-        vinylRecordLayer.fillColor = UIColor(white: 1, alpha: 0.05).cgColor
+        vinylRecordLayer.fillColor = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 0.05).cgColor
         vinylRecordLayer.strokeColor = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0).cgColor
         vinylRecordLayer.lineWidth = 2.0
         vinylRecordLayer.position = CGPoint(x: view.bounds.width/2 - CGFloat(vinylRecordRadius),
@@ -290,21 +291,28 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         }
     }
 
-    private func animateVinylRecordAppearance() {
+    private func animateVinylRecord() {
         let fadeInAnimation = CABasicAnimation(keyPath: "opacity")
         fadeInAnimation.fromValue = 0
         fadeInAnimation.toValue = 1
         fadeInAnimation.duration = 2
+        fadeInAnimation.beginTime = Constants.vinylRecordBeginTime
+        fadeInAnimation.fillMode = .backwards
+        fadeInAnimation.isRemovedOnCompletion = false
 
         let shimmerEffectAnimation = CABasicAnimation(keyPath: "strokeColor")
         shimmerEffectAnimation.fromValue = UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1.0).cgColor
         shimmerEffectAnimation.toValue = UIColor(red: 1.0, green: 0.9, blue: 0.2, alpha: 1.0).cgColor
-        shimmerEffectAnimation.duration = 1
+        shimmerEffectAnimation.duration = 2
         shimmerEffectAnimation.autoreverses = true
         shimmerEffectAnimation.repeatCount = Float.infinity
+        shimmerEffectAnimation.beginTime = Constants.vinylRecordBeginTime
+        shimmerEffectAnimation.fillMode = .backwards
+        shimmerEffectAnimation.isRemovedOnCompletion = false
 
         vinylRecordLayer.add(fadeInAnimation, forKey: "fadeIn")
         vinylRecordLayer.add(shimmerEffectAnimation, forKey: "shimmer")
+
         vinylRecordLayer.opacity = 1
     }
 
@@ -371,6 +379,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         rotationAnimation.toValue = 2 * Double.pi
         rotationAnimation.duration = 12 // Full rotation every 12 seconds
         rotationAnimation.repeatCount = Float.infinity
+        rotationAnimation.beginTime = Constants.vinylRecordBeginTime
         rotationAnimation.isRemovedOnCompletion = false
 
         textOnPathLayer.add(rotationAnimation, forKey: "rotation")
@@ -382,7 +391,9 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         fadeInAnimation.duration = 2.5
         fadeInAnimation.isRemovedOnCompletion = false
         fadeInAnimation.fillMode = .backwards
-        fadeInAnimation.beginTime = CACurrentMediaTime() + 3
+        fadeInAnimation.beginTime = Constants.vinylRecordBeginTime
+        fadeInAnimation.isRemovedOnCompletion = false
+
         textOnPathLayer.add(fadeInAnimation, forKey: "fadeIn")
         textOnPathLayer.opacity = 1
     }
@@ -482,13 +493,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         beatEmitterLayer?.isHidden = false
 
         animateCircularText()
+        animateVinylRecord()
 
         scheduleAudioStart()
         audioPlayerNode?.play()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.animateVinylRecordAppearance()
-        }
     }
 
     private func stopAnimation() {
