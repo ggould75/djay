@@ -17,8 +17,7 @@ final class MainViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-
+        
         view.addSubview(appTitleLabel)
 
         NSLayoutConstraint.activate([
