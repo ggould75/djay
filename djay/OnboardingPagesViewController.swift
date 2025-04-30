@@ -179,7 +179,10 @@ final class OnboardingPagesViewController: UIViewController {
     }
 
     private func navigateToNextPage(previousPageResult: OnboardingPageResult) {
-        guard let nextPage = currentPage.next else { return }
+        guard let nextPage = currentPage.next else {
+            dismiss(animated: true)
+            return
+        }
 
         currentPage = nextPage
         pageControl.currentPage = currentPage.rawValue
