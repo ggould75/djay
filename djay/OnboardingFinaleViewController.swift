@@ -139,8 +139,6 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     private var particleEmitterLayer: CAEmitterLayer?
     private var beatEmitterLayer: CAEmitterLayer?
 
-    private let textLayer = CATextLayer()
-
     /// A container layer for the rotating text.
     private let textOnPathLayer = CALayer()
 
