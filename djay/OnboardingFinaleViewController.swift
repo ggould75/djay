@@ -85,7 +85,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
         setupParticleLayers()
 
-        if let particleEmitterLayer {
+        if particleEmitterLayer.superlayer != nil {
             particleEmitterLayer.isHidden = !isAnimationRunning
             particleEmitterLayer.emitterPosition = CGPoint(x: containerBounds.width / 2,
                                                            y: containerBounds.height / 2)
@@ -96,7 +96,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
             }
         }
 
-        if let beatEmitterLayer {
+        if beatEmitterLayer.superlayer != nil {
             beatEmitterLayer.isHidden = !isAnimationRunning
             beatEmitterLayer.emitterPosition = CGPoint(x: containerBounds.width / 2,
                                                        y: containerBounds.height / 2)
@@ -109,10 +109,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         super.viewWillTransition(to: size, with: coordinator)
 
         // Remove the existing emitters and recreate them after rotation to prevent particle scaling issues
-        particleEmitterLayer?.removeFromSuperlayer()
-        beatEmitterLayer?.removeFromSuperlayer()
-        particleEmitterLayer = nil
-        beatEmitterLayer = nil
+        particleEmitterLayer.removeFromSuperlayer()
+        beatEmitterLayer.removeFromSuperlayer()
         setupParticleLayers()
     }
 
@@ -134,12 +132,16 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
     // MARK: - Layers and animation setup
 
+    /// The shape layer that renders the vinyl record.
     private let vinylRecordLayer = CAShapeLayer()
 
-    private var particleEmitterLayer: CAEmitterLayer?
-    private var beatEmitterLayer: CAEmitterLayer?
+    /// Emits particles from within the vinyl record.
+    private let particleEmitterLayer = CAEmitterLayer()
 
-    /// A container layer for the rotating text.
+    /// Emits particles that respond to music beats.
+    private let beatEmitterLayer = CAEmitterLayer()
+
+    /// A container layer that holds the rotating text around the vinyl.
     private let textOnPathLayer = CALayer()
 
     private func setupVinylRecordLayer() {
@@ -169,10 +171,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     }
 
     private func setupParticleLayers() {
-        guard particleEmitterLayer == nil, beatEmitterLayer == nil else { return }
+        guard particleEmitterLayer.superlayer == nil, beatEmitterLayer.superlayer == nil else { return }
 
-        // Main spectrum particle emitter
-        let particleEmitterLayer = CAEmitterLayer()
         particleEmitterLayer.emitterShape = .circle
         particleEmitterLayer.renderMode = .additive
         particleEmitterLayer.isHidden = true
@@ -200,10 +200,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
         particleEmitterLayer.emitterCells = emitterCells
         animationContainerView.layer.addSublayer(particleEmitterLayer)
-        self.particleEmitterLayer = particleEmitterLayer
 
         // An emitter for following the music's beats
-        let beatEmitterLayer = CAEmitterLayer()
         beatEmitterLayer.emitterShape = .circle
         beatEmitterLayer.emitterSize = CGSize(width: 10, height: 10)
         beatEmitterLayer.renderMode = .additive
@@ -218,7 +216,6 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
         beatEmitterLayer.emitterCells = [beatCell]
         animationContainerView.layer.addSublayer(beatEmitterLayer)
-        self.beatEmitterLayer = beatEmitterLayer
     }
 
     private func createEmitterCell(color: UIColor, velocity: CGFloat, scale: CGFloat, lifetime: Float) -> CAEmitterCell {
@@ -260,7 +257,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         CATransaction.begin()
         CATransaction.setDisableActions(true)
 
-        particleEmitterLayer?.emitterCells?.forEach { cell in
+        particleEmitterLayer.emitterCells?.forEach { cell in
             cell.velocity = 100 + CGFloat(scaledAmplitude * 150)
             cell.scale = 0.5 + CGFloat(scaledAmplitude * 0.5)
         }
@@ -275,7 +272,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
     // Create a quick burst of larger particles on beat detection
     private func emitBeatParticles() {
-        guard let beatEmitterLayer else { return }
+        guard beatEmitterLayer.superlayer != nil else { return }
 
         // Briefly increase birthrate then reduce it
         CATransaction.begin()
@@ -288,7 +285,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            beatEmitterLayer.birthRate = 0
+            self.beatEmitterLayer.birthRate = 0
             CATransaction.commit()
         }
     }
@@ -484,8 +481,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         isAnimationRunning = true
 
         setupParticleLayers()
-        particleEmitterLayer?.isHidden = false
-        beatEmitterLayer?.isHidden = false
+        particleEmitterLayer.isHidden = false
+        beatEmitterLayer.isHidden = false
 
         animateCircularText()
         animateVinylRecord()
