@@ -83,7 +83,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
             updateTextPathPosition()
         }
 
-        setupParticleLayers()
+        setupEmitterLayers()
 
         if particleEmitterLayer.superlayer != nil {
             particleEmitterLayer.isHidden = !isAnimationRunning
@@ -111,7 +111,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         // Remove the existing emitters and recreate them after rotation to prevent particle scaling issues
         particleEmitterLayer.removeFromSuperlayer()
         beatEmitterLayer.removeFromSuperlayer()
-        setupParticleLayers()
+        setupEmitterLayers()
     }
 
     // MARK: - Subviews setup
@@ -170,7 +170,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         animationContainerView.layer.addSublayer(vinylRecordLayer)
     }
 
-    private func setupParticleLayers() {
+    private func setupEmitterLayers() {
         guard particleEmitterLayer.superlayer == nil, beatEmitterLayer.superlayer == nil else { return }
 
         particleEmitterLayer.emitterShape = .circle
@@ -480,7 +480,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
         isAnimationRunning = true
 
-        setupParticleLayers()
+        setupEmitterLayers()
 
         // Ensure these property changes are scheduled and not influenced by animation timing or other layer tree changes
         CATransaction.begin()
