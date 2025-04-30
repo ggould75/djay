@@ -481,8 +481,13 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         isAnimationRunning = true
 
         setupParticleLayers()
+
+        // Ensure these property changes are scheduled and not influenced by animation timing or other layer tree changes
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         particleEmitterLayer.isHidden = false
         beatEmitterLayer.isHidden = false
+        CATransaction.commit()
 
         animateCircularText()
         animateVinylRecord()
