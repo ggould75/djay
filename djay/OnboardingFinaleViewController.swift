@@ -151,7 +151,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         vinylPath.append(centerHolePath)
 
         // Inner path
-        let vinylRecordRadius = Constants.vinylRecordDiameter / 2
+        let vinylRecordRadius = CGFloat(Constants.vinylRecordDiameter / 2)
         let innerRingPath = UIBezierPath(ovalIn: CGRect(x: 50, y: 50, width: vinylRecordRadius, height: vinylRecordRadius))
         vinylPath.append(innerRingPath)
 
@@ -159,8 +159,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         vinylRecordLayer.fillColor = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 0.05).cgColor
         vinylRecordLayer.strokeColor = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0).cgColor
         vinylRecordLayer.lineWidth = 2.0
-        vinylRecordLayer.position = CGPoint(x: view.bounds.width/2 - CGFloat(vinylRecordRadius),
-                                            y: view.bounds.height/2 - CGFloat(vinylRecordRadius))
+
+        let containerBounds = animationContainerView.bounds
+        vinylRecordLayer.position = CGPoint(x: containerBounds.width / 2 - vinylRecordRadius,
+                                            y: containerBounds.height / 2 - vinylRecordRadius)
         vinylRecordLayer.opacity = 0
 
         animationContainerView.layer.addSublayer(vinylRecordLayer)
