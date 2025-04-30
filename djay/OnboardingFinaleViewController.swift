@@ -174,8 +174,6 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         particleEmitterLayer.renderMode = .additive
         particleEmitterLayer.isHidden = true
 
-        var emitterCells: [CAEmitterCell] = []
-
         // Gold/yellow particles (matching logo color)
         let yellowCell = createEmitterCell(color: UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 0.8),
                                            velocity: 100,
@@ -191,11 +189,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
                                           velocity: 140,
                                           scale: 0.3,
                                           lifetime: 1.5)
-        emitterCells.append(yellowCell)
-        emitterCells.append(orangeCell)
-        emitterCells.append(whiteCell)
 
-        particleEmitterLayer.emitterCells = emitterCells
+        particleEmitterLayer.emitterCells = [yellowCell, orangeCell, whiteCell]
         animationContainerView.layer.addSublayer(particleEmitterLayer)
 
         // An emitter for following the music's beats
