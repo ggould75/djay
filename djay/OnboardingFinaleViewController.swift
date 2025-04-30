@@ -77,7 +77,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
                                                 y: containerBounds.height / 2 - vinylRecordRadius)
         }
 
-        if textOnPathLayer == nil {
+        if textOnPathLayer.superlayer == nil {
             setupTextOnPathLayer()
         } else {
             updateTextPathPosition()
@@ -140,7 +140,9 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     private var beatEmitterLayer: CAEmitterLayer?
 
     private let textLayer = CATextLayer()
-    private var textOnPathLayer: CALayer?
+
+    /// A container layer for the rotating text.
+    private let textOnPathLayer = CALayer()
 
     private func setupVinylRecordLayer() {
         // Outer path
@@ -328,11 +330,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         let innerRingRadius = CGFloat(Constants.vinylRecordDiameter / 4)
         let textPathRadius = (vinylRecordRadius + innerRingRadius) / 2
 
-        // Create container layer for the text that will rotate
-        let circularTextLayer = CALayer()
-        circularTextLayer.position = vinylCenterPoint
-        animationContainerView.layer.addSublayer(circularTextLayer)
-        self.textOnPathLayer = circularTextLayer
+        textOnPathLayer.position = vinylCenterPoint
+        animationContainerView.layer.addSublayer(textOnPathLayer)
 
         // Create individual character layers around the path
         let characters = Array(onboardingSkillLevel.congratulationMessage)
@@ -355,15 +354,13 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
             charLayer.position = CGPoint(x: x, y: y)
             charLayer.transform = CATransform3DMakeRotation(angle + (.pi / 2), 0, 0, 1)
 
-            circularTextLayer.addSublayer(charLayer)
+            textOnPathLayer.addSublayer(charLayer)
         }
 
-        circularTextLayer.opacity = 0
+        textOnPathLayer.opacity = 0
     }
 
     private func updateTextPathPosition() {
-        guard let textOnPathLayer = textOnPathLayer else { return }
-
         let vinylRecordRadius = CGFloat(Constants.vinylRecordDiameter / 2)
         let vinylCenterX = vinylRecordLayer.position.x + vinylRecordRadius
         let vinylCenterY = vinylRecordLayer.position.y + vinylRecordRadius
@@ -373,8 +370,6 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     }
 
     private func animateCircularText() {
-        guard let textOnPathLayer else { return }
-
         // Rotate the whole text
         let rotationAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
         rotationAnimation.fromValue = 0
@@ -510,7 +505,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         audioEngine?.mainMixerNode.removeTap(onBus: 0)
 
         vinylRecordLayer.removeAllAnimations()
-        textOnPathLayer?.removeAllAnimations()
+        textOnPathLayer.removeAllAnimations()
 
         isAnimationRunning = false
     }
