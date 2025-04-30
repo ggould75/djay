@@ -1,7 +1,7 @@
 import UIKit
 
 final class MainViewController: UIViewController {
-    var hasSeenOnboarding = false
+    private var hasSeenOnboarding = false
 
     private let appTitleLabel: UILabel = {
         let label = UILabel()
