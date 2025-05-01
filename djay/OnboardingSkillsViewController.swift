@@ -334,13 +334,27 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
     // MARK: Animate views before transitiong to the next page
 
     private func prepareSubviewsForTransition(_ completion: @escaping () -> Void) {
-        let tableViewCells = skillsTableView.visibleCells
+        let visibleCells = skillsTableView.visibleCells
+        let firstVisibleCell = visibleCells.first!
+        let cellOriginInView = firstVisibleCell.convert(firstVisibleCell.bounds.origin, to: view)
+
+        var cellSnapshotViews: [UIView] = []
+        visibleCells.forEach { cell in
+            let snapshot = cell.snapshotView(afterScreenUpdates: true)!
+            snapshot.frame = cell.convert(cell.bounds, to: view)
+            self.view.addSubview(snapshot)
+            cellSnapshotViews.append(snapshot)
+        }
+
+        skillsTableView.alpha = 0
+
         let tableViewWidth = skillsTableView.bounds.width
 
-        let imageDuration = 0.4
-        let cellDuration = 0.22
-        let cellDelay = 0.12
-        let totalDuration = max(imageDuration, cellDuration + cellDelay * Double(tableViewCells.count - 1))
+        let imageDuration = 0.7
+        let labelsDuration = 0.2
+        let cellDuration = 0.3
+        let cellDelay = 0.15
+        let totalDuration = max(imageDuration, cellDuration + cellDelay * Double(cellSnapshotViews.count - 1))
 
         UIView.animateKeyframes(
             withDuration: totalDuration,
@@ -348,22 +362,27 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
             options: .calculationModeCubic,
             animations: {
                 UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: imageDuration / totalDuration) {
-                    self.listeningEmojiImageView.transform = CGAffineTransform(scaleX: 2.5, y: 2.5)
+                    self.listeningEmojiImageView.transform = CGAffineTransform(scaleX: 5, y: 5)
                     self.listeningEmojiImageView.alpha = 0
+                }
+
+                UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: labelsDuration / totalDuration) {
                     self.titleLabel.transform = CGAffineTransform(scaleX: 0, y: 0)
                     self.titleLabel.alpha = 0
                     self.subtitleLabel.transform = CGAffineTransform(scaleX: 0, y: 0)
                     self.subtitleLabel.alpha = 0
                 }
 
-                for (index, cell) in tableViewCells.enumerated() {
+                for (index, cellSnapshotView) in cellSnapshotViews.enumerated() {
                     let startTime = Double(index) * cellDelay / totalDuration
                     UIView.addKeyframe(withRelativeStartTime: startTime, relativeDuration: cellDuration / totalDuration) {
-                        cell.transform = CGAffineTransform(translationX: -tableViewWidth, y: 0)
+                        let newX = -tableViewWidth - cellOriginInView.x
+                        cellSnapshotView.transform = CGAffineTransform(translationX: newX, y: 0)
                     }
                 }
             },
-            completion: { _ in
+            completion: { finished in
+                self.skillsTableView.removeFromSuperview()
                 completion()
             }
         )
