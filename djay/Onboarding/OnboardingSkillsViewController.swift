@@ -258,9 +258,6 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
             skillsTableViewTrailingConstraint?.isActive = true
         }
 
-        // TODO: should be 30 on portrait (any phone), but <= 20 in landscape (probably even less on SE)
-        //stackView.setCustomSpacing(30, after: subtitleLabel)
-
         if traitCollection.verticalSizeClass == .regular {
             titleLabel.font = Constants.titleFontMetrics.scaledFont(for: Constants.titlePreferredFont,
                                                                     maximumPointSize: Constants.titleFontSize)
