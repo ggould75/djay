@@ -1,6 +1,43 @@
 import UIKit
 import AVFoundation
 
+fileprivate extension CGImage {
+    static var circularParticle: CGImage? = {
+        let size = CGSize(width: 8, height: 8)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let image = renderer.image { context in
+            let cgContext = context.cgContext
+            UIColor.white.setFill()
+            cgContext.fillEllipse(in: CGRect(origin: .zero, size: size))
+        }
+        return image.cgImage
+    }()
+}
+
+fileprivate extension CAEmitterCell {
+    static func particle(color: UIColor, velocity: CGFloat, scale: CGFloat, lifetime: Float) -> CAEmitterCell {
+        let cell = CAEmitterCell()
+        cell.contents = CGImage.circularParticle
+        cell.birthRate = 8
+        cell.lifetime = lifetime
+        cell.lifetimeRange = lifetime / 4
+        cell.velocity = velocity
+        cell.velocityRange = velocity / 3
+        cell.scale = scale
+        cell.scaleRange = scale / 4
+        cell.scaleSpeed = -0.1
+        cell.emissionRange = .pi * 2
+        cell.spin = 0.5
+        cell.spinRange = 1.0
+        cell.color = color.cgColor
+        cell.alphaSpeed = -0.2
+        cell.redSpeed = 0.1
+        cell.blueSpeed = -0.1
+
+        return cell
+    }
+}
+
 extension OnboardingSkillLevel {
     var congratulationMessage: String {
         switch self {
@@ -40,6 +77,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        appLifecycleObservers.forEach { NotificationCenter.default.removeObserver($0) }
+    }
+
     // MARK: - View Lifecycle
 
     override func viewDidLoad() {
@@ -47,6 +88,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
         setupViews()
         setupAudio()
+        setupAppLifecycleObservers()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -63,6 +105,8 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+
+        guard UIApplication.shared.applicationState == .active else { return }
 
         let containerBounds = animationContainerView.bounds
 
@@ -82,7 +126,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
         setupEmitterLayers()
 
-        if particleEmitterLayer.superlayer != nil {
+        if let particleEmitterLayer {
             particleEmitterLayer.isHidden = !isAnimationRunning
             particleEmitterLayer.emitterPosition = CGPoint(x: containerBounds.width / 2,
                                                            y: containerBounds.height / 2)
@@ -93,10 +137,11 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
             }
         }
 
-        if beatEmitterLayer.superlayer != nil {
+        if let beatEmitterLayer {
             beatEmitterLayer.isHidden = !isAnimationRunning
             beatEmitterLayer.emitterPosition = CGPoint(x: containerBounds.width / 2,
                                                        y: containerBounds.height / 2)
+            beatEmitterLayer.emitterSize = CGSize(width: 10, height: 10)
         }
     }
 
@@ -106,8 +151,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         super.viewWillTransition(to: size, with: coordinator)
 
         // Remove the existing emitters and recreate them after rotation to prevent particle scaling issues
-        particleEmitterLayer.removeFromSuperlayer()
-        beatEmitterLayer.removeFromSuperlayer()
+        destroyEmitterLayers()
         setupEmitterLayers()
     }
 
@@ -133,10 +177,10 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     private let vinylRecordLayer = CAShapeLayer()
 
     /// Emits particles from within the vinyl record.
-    private let particleEmitterLayer = CAEmitterLayer()
+    private var particleEmitterLayer: CAEmitterLayer?
 
     /// Emits particles that respond to music beats.
-    private let beatEmitterLayer = CAEmitterLayer()
+    private var beatEmitterLayer: CAEmitterLayer?
 
     /// A container layer that holds the rotating text around the vinyl.
     private let textOnPathLayer = CALayer()
@@ -168,80 +212,71 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
     }
 
     private func setupEmitterLayers() {
-        guard particleEmitterLayer.superlayer == nil, beatEmitterLayer.superlayer == nil else { return }
+        guard particleEmitterLayer == nil, beatEmitterLayer == nil else { return }
 
+        let particleEmitterLayer = CAEmitterLayer()
         particleEmitterLayer.emitterShape = .circle
         particleEmitterLayer.renderMode = .additive
         particleEmitterLayer.isHidden = true
 
         // Gold/yellow particles (matching logo color)
-        let yellowCell = createEmitterCell(color: UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 0.8),
-                                           velocity: 100,
-                                           scale: 0.5,
-                                           lifetime: 2.0)
+        let yellowCell = CAEmitterCell.particle(color: UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 0.8),
+                                                velocity: 100,
+                                                scale: 0.5,
+                                                lifetime: 2.0)
         // Orange particles
-        let orangeCell = createEmitterCell(color: UIColor(red: 1.0, green: 0.6, blue: 0.0, alpha: 0.7),
-                                           velocity: 120,
-                                           scale: 0.4,
-                                           lifetime: 1.8)
+        let orangeCell = CAEmitterCell.particle(color: UIColor(red: 1.0, green: 0.6, blue: 0.0, alpha: 0.7),
+                                                velocity: 120,
+                                                scale: 0.4,
+                                                lifetime: 1.8)
         // White particles for highlights
-        let whiteCell = createEmitterCell(color: .white,
-                                          velocity: 140,
-                                          scale: 0.3,
-                                          lifetime: 1.5)
+        let whiteCell = CAEmitterCell.particle(color: .white,
+                                               velocity: 140,
+                                               scale: 0.3,
+                                               lifetime: 1.5)
 
         particleEmitterLayer.emitterCells = [yellowCell, orangeCell, whiteCell]
         animationContainerView.layer.addSublayer(particleEmitterLayer)
+        self.particleEmitterLayer = particleEmitterLayer
 
         // An emitter for following the music's beats
+        let beatEmitterLayer = CAEmitterLayer()
         beatEmitterLayer.emitterShape = .circle
         beatEmitterLayer.emitterSize = CGSize(width: 10, height: 10)
         beatEmitterLayer.renderMode = .additive
         beatEmitterLayer.birthRate = 0 // Start with no particles
         beatEmitterLayer.isHidden = true
 
-        let beatCell = createEmitterCell(color: UIColor(red: 1.0, green: 1.0, blue: 0.3, alpha: 0.9),
-                                         velocity: 200,
-                                         scale: 0.8,
-                                         lifetime: 0.8)
+        let beatCell = CAEmitterCell.particle(color: UIColor(red: 1.0, green: 1.0, blue: 0.3, alpha: 0.9),
+                                              velocity: 200,
+                                              scale: 0.8,
+                                              lifetime: 0.8)
         beatCell.birthRate = 20
 
         beatEmitterLayer.emitterCells = [beatCell]
         animationContainerView.layer.addSublayer(beatEmitterLayer)
+        self.beatEmitterLayer = beatEmitterLayer
     }
 
-    private func createEmitterCell(color: UIColor, velocity: CGFloat, scale: CGFloat, lifetime: Float) -> CAEmitterCell {
-        let cell = CAEmitterCell()
+    private func destroyEmitterLayers() {
+        particleEmitterLayer?.removeFromSuperlayer()
+        beatEmitterLayer?.removeFromSuperlayer()
+        particleEmitterLayer = nil
+        beatEmitterLayer = nil
+    }
 
-        // Create the particle's base image
-        let size = CGSize(width: 8, height: 8)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        let context = UIGraphicsGetCurrentContext()
-        context?.setFillColor(UIColor.white.cgColor)
-        context?.fillEllipse(in: CGRect(origin: .zero, size: size))
-        cell.contents = UIGraphicsGetImageFromCurrentImageContext()?.cgImage
-        UIGraphicsEndImageContext()
-
-        cell.birthRate = 8
-        cell.lifetime = lifetime
-        cell.lifetimeRange = lifetime / 4
-        cell.velocity = velocity
-        cell.velocityRange = velocity / 3
-        cell.scale = scale
-        cell.scaleRange = scale / 4
-        cell.scaleSpeed = -0.1
-        cell.emissionRange = .pi * 2
-        cell.spin = 0.5
-        cell.spinRange = 1.0
-        cell.color = color.cgColor
-        cell.alphaSpeed = -0.2
-        cell.redSpeed = 0.1
-        cell.blueSpeed = -0.1
-
-        return cell
+    private func showEmitterLayers() {
+        // Ensure these property changes are scheduled and not influenced by animation timing or other layer tree changes
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        particleEmitterLayer?.isHidden = false
+        beatEmitterLayer?.isHidden = false
+        CATransaction.commit()
     }
 
     private func updateParticlesWithAmplitude(_ amplitude: Float) {
+        guard let particleEmitterLayer else { return }
+
         // Scale amplitude to reasonable values
         let scaledAmplitude = min(2.0, amplitude * 10.0)
 
@@ -264,7 +299,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
 
     // Create a quick burst of larger particles on beat detection
     private func emitBeatParticles() {
-        guard beatEmitterLayer.superlayer != nil else { return }
+        guard let beatEmitterLayer else { return }
 
         // Briefly increase birthrate then reduce it
         CATransaction.begin()
@@ -277,7 +312,7 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            self.beatEmitterLayer.birthRate = 0
+            beatEmitterLayer.birthRate = 0
             CATransaction.commit()
         }
     }
@@ -473,18 +508,47 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         isAnimationRunning = true
 
         setupEmitterLayers()
-
-        // Ensure these property changes are scheduled and not influenced by animation timing or other layer tree changes
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        particleEmitterLayer.isHidden = false
-        beatEmitterLayer.isHidden = false
-        CATransaction.commit()
+        showEmitterLayers()
 
         animateCircularText()
         animateVinylRecord()
 
         scheduleAudioStart()
+        audioPlayerNode?.play()
+    }
+
+    private func pauseAnimation() {
+        audioPlayerNode?.pause()
+        audioEngine?.pause()
+        audioEngine?.mainMixerNode.removeTap(onBus: 0)
+
+        destroyEmitterLayers()
+    }
+
+    private func resumeAnimation() {
+        setupEmitterLayers()
+
+        // Trigger viewDidLayoutSubviews
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+
+        showEmitterLayers()
+
+        let mixer = self.audioEngine?.mainMixerNode
+        let format = mixer?.outputFormat(forBus: 0)
+
+        mixer?.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+            self?.processAudioBuffer(buffer)
+        }
+
+        if audioEngine?.isRunning == false {
+            do {
+                try audioEngine?.start()
+            } catch {
+                assertionFailure("Error restarting audio engine: \(error)")
+            }
+        }
+
         audioPlayerNode?.play()
     }
 
@@ -500,5 +564,30 @@ final class OnboardingFinaleViewController: UIViewController, OnboardingPageCont
         textOnPathLayer.removeAllAnimations()
 
         isAnimationRunning = false
+    }
+
+    // MARK: - Pausing/Resuming animation on app lifecycle events
+
+    private var appLifecycleObservers: [NSObjectProtocol] = []
+
+    private func setupAppLifecycleObservers() {
+        let willResignActiveObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.pauseAnimation()
+        }
+
+        let didBecomeActiveObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.resumeAnimation()
+        }
+
+        appLifecycleObservers.append(willResignActiveObserver)
+        appLifecycleObservers.append(didBecomeActiveObserver)
     }
 }
