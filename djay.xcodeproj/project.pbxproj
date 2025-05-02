@@ -28,6 +28,9 @@
 		07F5F48C2DC3891600761C4D /* djayUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5F48A2DC3891600761C4D /* djayUITestsLaunchTests.swift */; };
 		07F5F48D2DC3891600761C4D /* djayUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5F4892DC3891600761C4D /* djayUITests.swift */; };
 		07F5F4902DC3891F00761C4D /* djayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5F48E2DC3891F00761C4D /* djayTests.swift */; };
+		07F5F90C2DC4F4E000761C4D /* UIScreen+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5F90B2DC4F4E000761C4D /* UIScreen+Extensions.swift */; };
+		07F5F9102DC4FC8500761C4D /* OnboardingWelcomeToMixFavoriteMusicTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5F90E2DC4FC8500761C4D /* OnboardingWelcomeToMixFavoriteMusicTransition.swift */; };
+		07F5F9112DC4FC8500761C4D /* OnboardingStandardTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07F5F90D2DC4FC8500761C4D /* OnboardingStandardTransition.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,9 +51,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		07F5F42F2DC3880E00761C4D /* djay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = djay.app; path = "/Users/marcomussini/Dev/djay/build/Debug-iphoneos/djay.app"; sourceTree = "<absolute>"; };
-		07F5F4302DC3880E00761C4D /* djayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = djayTests.xctest; path = "/Users/marcomussini/Dev/djay/build/Debug-iphoneos/djay.app/PlugIns/djayTests.xctest"; sourceTree = "<absolute>"; };
-		07F5F4312DC3880E00761C4D /* djayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = djayUITests.xctest; path = "/Users/marcomussini/Dev/djay/build/Debug-iphoneos/djayUITests-Runner.app/PlugIns/djayUITests.xctest"; sourceTree = "<absolute>"; };
 		07F5F45E2DC388F200761C4D /* CaseIterable+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CaseIterable+Extensions.swift"; sourceTree = "<group>"; };
 		07F5F45F2DC388F200761C4D /* UIColor+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extensions.swift"; sourceTree = "<group>"; };
 		07F5F4602DC388F200761C4D /* UITableViewCell+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewCell+Extensions.swift"; sourceTree = "<group>"; };
@@ -73,6 +73,12 @@
 		07F5F4892DC3891600761C4D /* djayUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = djayUITests.swift; sourceTree = "<group>"; };
 		07F5F48A2DC3891600761C4D /* djayUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = djayUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		07F5F48E2DC3891F00761C4D /* djayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = djayTests.swift; sourceTree = "<group>"; };
+		07F5F4912DC3898A00761C4D /* djay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = djay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		07F5F4922DC3898A00761C4D /* djayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = djayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		07F5F4932DC3898A00761C4D /* djayUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = djayUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		07F5F90B2DC4F4E000761C4D /* UIScreen+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIScreen+Extensions.swift"; sourceTree = "<group>"; };
+		07F5F90D2DC4FC8500761C4D /* OnboardingStandardTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStandardTransition.swift; sourceTree = "<group>"; };
+		07F5F90E2DC4FC8500761C4D /* OnboardingWelcomeToMixFavoriteMusicTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingWelcomeToMixFavoriteMusicTransition.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +112,9 @@
 				07F5F4752DC388F200761C4D /* djay */,
 				07F5F48F2DC3891F00761C4D /* djayTests */,
 				07F5F48B2DC3891600761C4D /* djayUITests */,
+				07F5F4912DC3898A00761C4D /* djay.app */,
+				07F5F4922DC3898A00761C4D /* djayTests.xctest */,
+				07F5F4932DC3898A00761C4D /* djayUITests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -116,6 +125,7 @@
 				07F5F45F2DC388F200761C4D /* UIColor+Extensions.swift */,
 				07F5F4602DC388F200761C4D /* UITableViewCell+Extensions.swift */,
 				07F5F4612DC388F200761C4D /* UIView+Extensions.swift */,
+				07F5F90B2DC4F4E000761C4D /* UIScreen+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -123,10 +133,11 @@
 		07F5F46A2DC388F200761C4D /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				07F5F90F2DC4FC8500761C4D /* Custom Transitions */,
+				07F5F4662DC388F200761C4D /* OnboardingPagesViewController.swift */,
 				07F5F4632DC388F200761C4D /* OnboardingFinaleViewController.swift */,
 				07F5F4642DC388F200761C4D /* OnboardingGradientBackgroundView.swift */,
 				07F5F4652DC388F200761C4D /* OnboardingMixFavoriteMusicViewController.swift */,
-				07F5F4662DC388F200761C4D /* OnboardingPagesViewController.swift */,
 				07F5F4672DC388F200761C4D /* OnboardingSkillsViewController.swift */,
 				07F5F4682DC388F200761C4D /* OnboardingSkillsViewModel.swift */,
 				07F5F4692DC388F200761C4D /* OnboardingWelcomeViewController.swift */,
@@ -168,6 +179,15 @@
 			path = djayTests;
 			sourceTree = "<group>";
 		};
+		07F5F90F2DC4FC8500761C4D /* Custom Transitions */ = {
+			isa = PBXGroup;
+			children = (
+				07F5F90D2DC4FC8500761C4D /* OnboardingStandardTransition.swift */,
+				07F5F90E2DC4FC8500761C4D /* OnboardingWelcomeToMixFavoriteMusicTransition.swift */,
+			);
+			path = "Custom Transitions";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -187,7 +207,7 @@
 			packageProductDependencies = (
 			);
 			productName = djay;
-			productReference = 07F5F42F2DC3880E00761C4D /* djay.app */;
+			productReference = 07F5F4912DC3898A00761C4D /* djay.app */;
 			productType = "com.apple.product-type.application";
 		};
 		0790EB502DB82328001D1AD4 /* djayTests */ = {
@@ -207,7 +227,7 @@
 			packageProductDependencies = (
 			);
 			productName = djayTests;
-			productReference = 07F5F4302DC3880E00761C4D /* djayTests.xctest */;
+			productReference = 07F5F4922DC3898A00761C4D /* djayTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		0790EB5A2DB82328001D1AD4 /* djayUITests */ = {
@@ -227,7 +247,7 @@
 			packageProductDependencies = (
 			);
 			productName = djayUITests;
-			productReference = 07F5F4312DC3880E00761C4D /* djayUITests.xctest */;
+			productReference = 07F5F4932DC3898A00761C4D /* djayUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -313,9 +333,12 @@
 				07F5F4792DC388F200761C4D /* OnboardingSkillsViewModel.swift in Sources */,
 				07F5F47A2DC388F200761C4D /* OnboardingWelcomeViewController.swift in Sources */,
 				07F5F47B2DC388F200761C4D /* OnboardingFinaleViewController.swift in Sources */,
+				07F5F9102DC4FC8500761C4D /* OnboardingWelcomeToMixFavoriteMusicTransition.swift in Sources */,
+				07F5F9112DC4FC8500761C4D /* OnboardingStandardTransition.swift in Sources */,
 				07F5F47C2DC388F200761C4D /* CaseIterable+Extensions.swift in Sources */,
 				07F5F47D2DC388F200761C4D /* UITableViewCell+Extensions.swift in Sources */,
 				07F5F47E2DC388F200761C4D /* OnboardingGradientBackgroundView.swift in Sources */,
+				07F5F90C2DC4F4E000761C4D /* UIScreen+Extensions.swift in Sources */,
 				07F5F47F2DC388F200761C4D /* OnboardingSkillsViewController.swift in Sources */,
 				07F5F4802DC388F200761C4D /* OnboardingPagesViewController.swift in Sources */,
 				07F5F4812DC388F200761C4D /* SceneDelegate.swift in Sources */,

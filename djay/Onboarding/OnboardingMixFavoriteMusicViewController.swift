@@ -28,18 +28,16 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
         return stackView
     }()
 
-    private let logoImageView: UIImageView = {
+    let logoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.setContentHuggingPriority(.required, for: .vertical)
-        imageView.setContentCompressionResistancePriority(.defaultLow - 1, for: .vertical)
         imageView.image = UIImage(named: "onboarding-djay-logo")
 
         return imageView
     }()
 
-    private let appsImageView: UIImageView = {
+    let appsImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
@@ -50,7 +48,7 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
         return imageView
     }()
 
-    private let favoriteMusicLabel: UILabel = {
+    let favoriteMusicLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Mix Your Favorite Music"
@@ -64,7 +62,7 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
         return label
     }()
 
-    private let appleAwardImageView: UIImageView = {
+    let appleAwardImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
@@ -96,6 +94,7 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
     }
 
     override func viewDidLoad() {
+        print("mix viewDidLoad()")
         super.viewDidLoad()
 
         updateUIForCurrentTraitCollection()
@@ -105,8 +104,16 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
         let topSpacerView = UIView.spacerView()
         let bottomSpacerView = UIView.spacerView()
 
+        let logoImageContainerView = UIView()
+        logoImageContainerView.translatesAutoresizingMaskIntoConstraints = false
+        logoImageContainerView.setContentHuggingPriority(.required, for: .vertical)
+        logoImageContainerView.setContentHuggingPriority(.required, for: .horizontal)
+        logoImageContainerView.setContentCompressionResistancePriority(.defaultLow - 1, for: .vertical)
+        logoImageContainerView.setContentCompressionResistancePriority(.defaultLow - 1, for: .horizontal)
+        logoImageContainerView.addSubview(logoImageView)
+
         stackView.addArrangedSubview(topSpacerView)
-        stackView.addArrangedSubview(logoImageView)
+        stackView.addArrangedSubview(logoImageContainerView)
         stackView.addArrangedSubview(appsImageView)
         stackView.addArrangedSubview(favoriteMusicLabel)
         stackView.addArrangedSubview(appleAwardImageView)
@@ -122,10 +129,22 @@ final class OnboardingMixFavoriteMusicViewController: UIViewController, Onboardi
             stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -24),
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -24),
 
-            logoImageView.heightAnchor.constraint(greaterThanOrEqualToConstant: 20),
+            // Preserve image aspect ratio. This is important since the image is animated as a snapshot and should only be scaled proportionally
+            logoImageContainerView.heightAnchor.constraint(greaterThanOrEqualToConstant: 20),
+            logoImageContainerView.widthAnchor.constraint(equalTo: logoImageContainerView.heightAnchor, multiplier: 3.328125),
+
+            logoImageView.leadingAnchor.constraint(equalTo: logoImageContainerView.leadingAnchor),
+            logoImageView.trailingAnchor.constraint(equalTo: logoImageContainerView.trailingAnchor),
+            logoImageView.topAnchor.constraint(equalTo: logoImageContainerView.topAnchor),
+            logoImageView.bottomAnchor.constraint(equalTo: logoImageContainerView.bottomAnchor),
+
             appsImageView.heightAnchor.constraint(greaterThanOrEqualToConstant: 80),
             appleAwardImageView.heightAnchor.constraint(lessThanOrEqualToConstant: appleAwardImageViewPreferredHeight),
         ])
+
+        if UIScreen.main.isPhoneSE {
+            logoImageContainerView.heightAnchor.constraint(lessThanOrEqualToConstant: 30).isActive = true
+        }
     }
 }
 
@@ -135,14 +154,14 @@ fileprivate extension OnboardingMixFavoriteMusicViewController {
             return 20 // for any iPhone in portrait mode
         }
 
-        return UIScreen.main.nativeBounds.width <= 640
-                    ? 5  // for iPhone SE
-                    : 10 // for larger iPhones
+        return UIScreen.main.isPhoneSE ? 5 : 10
     }
 
     var appleAwardImageViewPreferredHeight: CGFloat {
-        return UIScreen.main.nativeBounds.width <= 640
-            ? traitCollection.verticalSizeClass == .compact ? 40 : 80 // for iPhone SE
-            : 80 // for larger iPhones
+        if UIScreen.main.isPhoneSE {
+            return traitCollection.verticalSizeClass == .compact ? 40 : 80
+        }
+
+        return 80
     }
 }

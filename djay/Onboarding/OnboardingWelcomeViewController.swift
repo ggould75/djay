@@ -12,16 +12,16 @@ final class OnboardingWelcomeViewController: UIViewController, OnboardingPageCon
 
     // MARK: Subviews setup
 
-    private let logoImageView: UIImageView = {
+    let logoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .center
+        imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "onboarding-djay-logo")
 
         return imageView
     }()
 
-    private let welcomeLabel: UILabel = {
+    let welcomeLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.setContentHuggingPriority(.required, for: .vertical)
@@ -41,14 +41,21 @@ final class OnboardingWelcomeViewController: UIViewController, OnboardingPageCon
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        let containerView = UIView()
+        containerView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(containerView)
+        containerView.addSubview(logoImageView)
+
         view.addSubview(welcomeLabel)
-        view.addSubview(logoImageView)
 
         NSLayoutConstraint.activate([
-            logoImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            logoImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            logoImageView.bottomAnchor.constraint(equalTo: welcomeLabel.topAnchor),
+            containerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            containerView.bottomAnchor.constraint(equalTo: welcomeLabel.topAnchor),
+
+            logoImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            logoImageView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            logoImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
 
             welcomeLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             welcomeLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor),

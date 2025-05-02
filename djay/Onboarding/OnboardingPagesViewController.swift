@@ -48,16 +48,11 @@ protocol OnboardingPageContent {
     func navigationButtonTapped(completion: @escaping (OnboardingPageResult) -> Void)
 }
 
-// MARK: -
-
 final class OnboardingPagesViewController: UIViewController {
     private var currentPage = OnboardingPage.welcome
 
-    private let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-
-    var currentViewController: (UIViewController & OnboardingPageContent)? {
-        return pageViewController.viewControllers?.first as? UIViewController & OnboardingPageContent
-    }
+    private let customNavigationController = UINavigationController()
+    private var currentContentViewController: (UIViewController & OnboardingPageContent)?
 
     // MARK: Subviews setup
 
@@ -147,36 +142,41 @@ final class OnboardingPagesViewController: UIViewController {
 
         setupGradientBackground()
         setupUI()
-        setupPageViewController()
+        setupNavigationController()
     }
 
-    // MARK: Page navigation
+    // MARK: Navigation Controller setup
 
-    private func setupPageViewController() {
-        addChild(pageViewController)
-        view.addSubview(pageViewController.view)
-        pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
+    private func setupNavigationController() {
+        addChild(customNavigationController)
+        view.addSubview(customNavigationController.view)
+        customNavigationController.view.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            pageViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            pageViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            pageViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            pageViewController.view.bottomAnchor.constraint(equalTo: navigationButton.topAnchor)
+            customNavigationController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            customNavigationController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            customNavigationController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            customNavigationController.view.bottomAnchor.constraint(equalTo: navigationButton.topAnchor)
         ])
 
-        pageViewController.didMove(toParent: self)
+        customNavigationController.didMove(toParent: self)
 
+        // Configure navigation controller
+        customNavigationController.isNavigationBarHidden = true
+        customNavigationController.delegate = self
+
+        // Set up first screen
         var firstViewController = currentPage.viewController()
         firstViewController.navigationButtonEnabledCallback = { [weak self] enabled in
             self?.navigationButton.isEnabled = enabled
         }
 
-        pageViewController.setViewControllers([firstViewController],
-                                              direction: .forward,
-                                              animated: false,
-                                              completion: nil)
+        currentContentViewController = firstViewController
+        customNavigationController.pushViewController(firstViewController, animated: false)
         updateNavigationButtonTitle()
     }
+
+    // MARK: Page navigation
 
     private func navigateToNextPage(previousPageResult: OnboardingPageResult) {
         guard let nextPage = currentPage.next else {
@@ -192,23 +192,39 @@ final class OnboardingPagesViewController: UIViewController {
             self?.navigationButton.isEnabled = enabled
         }
 
-        pageViewController.setViewControllers(
-            [nextPageViewController],
-            direction: .forward,
-            animated: true,
-            completion: nil
-        )
+        currentContentViewController = nextPageViewController
+        customNavigationController.pushViewController(nextPageViewController, animated: true)
 
         updateNavigationButtonTitle()
     }
 
     @objc private func navigationButtonTapped() {
-        currentViewController?.navigationButtonTapped { [weak self] result in
+        currentContentViewController?.navigationButtonTapped { [weak self] result in
             self?.navigateToNextPage(previousPageResult: result)
         }
     }
 
     private func updateNavigationButtonTitle() {
-        navigationButton.setTitle(currentViewController?.navigationButtonTitle, for: .normal)
+        navigationButton.setTitle(currentContentViewController?.navigationButtonTitle, for: .normal)
+    }
+}
+
+// MARK: - UINavigationControllerDelegate
+
+extension OnboardingPagesViewController: UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController,
+                              animationControllerFor operation: UINavigationController.Operation,
+                              from fromViewController: UIViewController,
+                              to toViewController: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        if operation == .push {
+            if fromViewController is OnboardingWelcomeViewController &&
+                toViewController is OnboardingMixFavoriteMusicViewController {
+                return OnboardingWelcomeToMixFavoriteMusicTransition()
+            }
+
+            return OnboardingStandardTransition()
+        }
+
+        return nil
     }
 }

@@ -60,12 +60,8 @@ final class OnboardingSkillCell: UITableViewCell {
             newContentConfiguration.textProperties.font = Constants.fontMetrics.scaledFont(for: Constants.preferredFont,
                                                                                            maximumPointSize: 25)
         } else if traitCollection.verticalSizeClass == .compact {
-            let maximumPointSize: CGFloat = UIScreen.main.nativeBounds.width <= 640
-                                                ? 17 // for iPhone SE
-                                                : 20 // for larger iPhones
-            let preferredFontSize: CGFloat = UIScreen.main.nativeBounds.width <= 640
-                                                ? 10 // for iPhone SE
-                                                : 15 // for larger iPhones
+            let maximumPointSize: CGFloat = UIScreen.main.isPhoneSE ? 17 : 20
+            let preferredFontSize: CGFloat = UIScreen.main.isPhoneSE ? 10 : 15
             newContentConfiguration.textProperties.font = Constants.fontMetrics.scaledFont(for: UIFont.systemFont(ofSize: preferredFontSize),
                                                                                            maximumPointSize: maximumPointSize)
         }
@@ -269,9 +265,7 @@ final class OnboardingSkillsViewController: UIViewController, OnboardingPageCont
                                                                     maximumPointSize: 15)
             subtitleLabel.font = Constants.subtitleFontMetrics.scaledFont(for: Constants.subtitlePreferredFont,
                                                                           maximumPointSize: 10)
-            skillsTableView.rowHeight = UIScreen.main.nativeBounds.width <= 640
-                                            ? 36  // for iPhone SE
-                                            : 42  // for larger iPhones
+            skillsTableView.rowHeight = UIScreen.main.isPhoneSE ? 36 : 42
         }
     }
 }
@@ -318,9 +312,7 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
             return 12
         }
 
-        return UIScreen.main.nativeBounds.width <= 640
-                    ? 3  // for iPhone SE
-                    : 5  // for larger iPhones
+        return UIScreen.main.isPhoneSE ? 3 : 5
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -330,6 +322,9 @@ extension OnboardingSkillsViewController: UITableViewDelegate {
 
     // MARK: Animate views before transitiong to the next page
 
+    // Note: This animation would be better implemented using UIViewControllerAnimatedTransitioning,
+    // as done in OnboardingWelcomeToMixFavoriteMusicTransition. However, it was originally written
+    // while using UIPageViewController, and I left it as-is due to time constraints.
     private func prepareSubviewsForTransition(_ completion: @escaping () -> Void) {
         let visibleCells = skillsTableView.visibleCells
         let firstVisibleCell = visibleCells.first!
@@ -394,8 +389,6 @@ fileprivate extension OnboardingSkillsViewController {
             return 20 // for any iPhone in portrait mode
         }
 
-        return UIScreen.main.nativeBounds.width <= 640
-                    ? 5  // for iPhone SE
-                    : 10 // for larger iPhones
+        return UIScreen.main.isPhoneSE ? 5 : 10
     }
 }
