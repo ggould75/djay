@@ -21,12 +21,4 @@ final class OnboardingSkillsViewModel {
     func skillLevel(at indexPath: IndexPath) -> OnboardingSkillLevel {
         return OnboardingSkillLevel.allCases[indexPath.section]
     }
-
-    func indexPath(for skillLevel: OnboardingSkillLevel) -> IndexPath? {
-        guard let rowIndex = skillLevel.index else {
-            return nil
-        }
-
-        return IndexPath(row: 1, section: rowIndex)
-    }
 }
